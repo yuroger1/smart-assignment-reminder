@@ -167,7 +167,75 @@
         </div>
     </div>
 
+    <!-- Edit Assignment Modal -->
+<div class="modal fade" id="editAssignmentModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+
+            <div class="modal-header">
+                <h5 class="modal-title">Edit Assignment</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+
+            <div class="modal-body">
+                <form id="editAssignmentForm" class="row g-3">
+
+                    <input type="hidden" id="editAssignmentId">
+
+                    <div class="col-md-6">
+                        <label class="form-label">Assignment Title</label>
+                        <input type="text" id="editAssignmentTitle" class="form-control" required>
+                    </div>
+
+                    <div class="col-md-6">
+                        <label class="form-label">Course</label>
+                        <select id="editAssignmentCourse" class="form-select">
+                            <option value="">No Course</option>
+                        </select>
+                    </div>
+
+                    <div class="col-md-12">
+                        <label class="form-label">Description</label>
+                        <textarea id="editAssignmentDescription" class="form-control" rows="2"></textarea>
+                    </div>
+
+                    <div class="col-md-6">
+                        <label class="form-label">Due Date</label>
+                        <input type="datetime-local" id="editAssignmentDueDate" class="form-control" required>
+                    </div>
+
+                    <div class="col-md-3">
+                        <label class="form-label">Priority</label>
+                        <select id="editAssignmentPriority" class="form-select">
+                            <option value="Low">Low</option>
+                            <option value="Medium">Medium</option>
+                            <option value="High">High</option>
+                        </select>
+                    </div>
+
+                    <div class="col-md-3">
+                        <label class="form-label">Status</label>
+                        <select id="editAssignmentStatus" class="form-select">
+                            <option value="Pending">Pending</option>
+                            <option value="Completed">Completed</option>
+                        </select>
+                    </div>
+
+                    <div class="col-md-12">
+                        <button type="submit" class="btn btn-primary">
+                            Save Changes
+                        </button>
+                    </div>
+
+                </form>
+            </div>
+
+        </div>
+    </div>
 </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 
 <script src="js/dashboard.js"></script>
 </body>

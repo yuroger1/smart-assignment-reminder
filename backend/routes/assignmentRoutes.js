@@ -102,7 +102,8 @@ router.get("/:id", async (req, res) => {
         });
 
     } catch (error) {
-        console.error(error);
+        console.error("Get assignment error:", error);
+
         res.status(500).json({
             success: false,
             message: "Failed to get assignment."
@@ -158,12 +159,32 @@ router.put("/:id", async (req, res) => {
     try {
         const userId = req.session.user.user_id;
         const assignmentId = req.params.id;
-        const { course_id, title, description, due_date, priority, status } = req.body;
+
+        const {
+            course_id,
+            title,
+            description,
+            due_date,
+            priority,
+            status
+        } = req.body;
+
+        if (!title || !due_date) {
+            return res.status(400).json({
+                success: false,
+                message: "Title and due date are required."
+            });
+        }
 
         await pool.execute(
             `
             UPDATE assignments
-            SET course_id = ?, title = ?, description = ?, due_date = ?, priority = ?, status = ?
+            SET course_id = ?, 
+                title = ?, 
+                description = ?, 
+                due_date = ?, 
+                priority = ?, 
+                status = ?
             WHERE assignment_id = ? AND user_id = ?
             `,
             [
@@ -184,7 +205,8 @@ router.put("/:id", async (req, res) => {
         });
 
     } catch (error) {
-        console.error(error);
+        console.error("Update assignment error:", error);
+
         res.status(500).json({
             success: false,
             message: "Failed to update assignment."

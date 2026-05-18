@@ -33,15 +33,27 @@ async function loadCourses() {
     const data = await response.json();
 
     const courseSelect = document.getElementById("assignmentCourse");
+    const editCourseSelect = document.getElementById("editAssignmentCourse");
+
     courseSelect.innerHTML = `<option value="">No Course</option>`;
+
+    if (editCourseSelect) {
+        editCourseSelect.innerHTML = `<option value="">No Course</option>`;
+    }
 
     if (data.success) {
         data.courses.forEach(function (course) {
-            courseSelect.innerHTML += `
+            const option = `
                 <option value="${course.course_id}">
                     ${course.course_name}
                 </option>
             `;
+
+            courseSelect.innerHTML += option;
+
+            if (editCourseSelect) {
+                editCourseSelect.innerHTML += option;
+            }
         });
     }
 }
@@ -168,6 +180,11 @@ function displayAssignments(assignments) {
 
                     <div>
                         ${completeButton}
+
+                        <button class="btn btn-warning btn-sm mb-2"
+                            onclick="openEditModal(${assignment.assignment_id})">
+                            Edit
+                        </button>
 
                         <button class="btn btn-danger btn-sm"
                             onclick="deleteAssignment(${assignment.assignment_id})">
@@ -382,3 +399,96 @@ function formatDate(dateString) {
     const date = new Date(dateString);
     return date.toLocaleString();
 }
+
+function convertToMySQLDateTime(dateTimeLocalValue) {
+    return dateTimeLocalValue.replace("T", " ") + ":00";
+}
+
+function convertToDateTimeLocal(dateString) {
+    const date = new Date(dateString);
+
+    const offset = date.getTimezoneOffset();
+    const localDate = new Date(date.getTime() - offset * 60 * 1000);
+
+    return localDate.toISOString().slice(0, 16);
+}
+
+async function openEditModal(assignmentId) {
+    const response = await fetch(`/api/assignments/${assignmentId}`, {
+        method: "GET",
+        credentials: "include"
+    });
+
+    const data = await response.json();
+
+    if (!data.success) {
+        alert(data.message);
+        return;
+    }
+
+    const assignment = data.assignment;
+
+    document.getElementById("editAssignmentId").value = assignment.assignment_id;
+    document.getElementById("editAssignmentTitle").value = assignment.title;
+    document.getElementById("editAssignmentDescription").value = assignment.description || "";
+    document.getElementById("editAssignmentDueDate").value = convertToDateTimeLocal(assignment.due_date);
+    document.getElementById("editAssignmentPriority").value = assignment.priority;
+    document.getElementById("editAssignmentStatus").value = assignment.status;
+
+    if (assignment.course_id) {
+        document.getElementById("editAssignmentCourse").value = assignment.course_id;
+    } else {
+        document.getElementById("editAssignmentCourse").value = "";
+    }
+
+    const editModal = new bootstrap.Modal(document.getElementById("editAssignmentModal"));
+    editModal.show();
+}
+
+const editAssignmentForm = document.getElementById("editAssignmentForm");
+
+editAssignmentForm.addEventListener("submit", async function (event) {
+    event.preventDefault();
+
+    const assignmentId = document.getElementById("editAssignmentId").value;
+    const courseId = document.getElementById("editAssignmentCourse").value;
+    const title = document.getElementById("editAssignmentTitle").value;
+    const description = document.getElementById("editAssignmentDescription").value;
+
+    const dueDateInput = document.getElementById("editAssignmentDueDate").value;
+    const dueDate = convertToMySQLDateTime(dueDateInput);
+
+    const priority = document.getElementById("editAssignmentPriority").value;
+    const status = document.getElementById("editAssignmentStatus").value;
+
+    const response = await fetch(`/api/assignments/${assignmentId}`, {
+        method: "PUT",
+        headers: {
+            "Content-Type": "application/json"
+        },
+        credentials: "include",
+        body: JSON.stringify({
+            course_id: courseId || null,
+            title: title,
+            description: description,
+            due_date: dueDate,
+            priority: priority,
+            status: status
+        })
+    });
+
+    const data = await response.json();
+
+    if (data.success) {
+        alert("Assignment updated successfully.");
+
+        const modalElement = document.getElementById("editAssignmentModal");
+        const modal = bootstrap.Modal.getInstance(modalElement);
+        modal.hide();
+
+        loadAssignments();
+        loadNotifications();
+    } else {
+        alert(data.message);
+    }
+});
