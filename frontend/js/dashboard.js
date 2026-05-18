@@ -34,11 +34,16 @@ async function loadCourses() {
 
     const courseSelect = document.getElementById("assignmentCourse");
     const editCourseSelect = document.getElementById("editAssignmentCourse");
+    const courseFilter = document.getElementById("courseFilter");
 
     courseSelect.innerHTML = `<option value="">No Course</option>`;
 
     if (editCourseSelect) {
         editCourseSelect.innerHTML = `<option value="">No Course</option>`;
+    }
+
+    if (courseFilter) {
+        courseFilter.innerHTML = `<option value="">All Courses</option>`;
     }
 
     if (data.success) {
@@ -54,6 +59,10 @@ async function loadCourses() {
             if (editCourseSelect) {
                 editCourseSelect.innerHTML += option;
             }
+
+            if (courseFilter) {
+                courseFilter.innerHTML += option;
+            }
         });
     }
 }
@@ -62,6 +71,7 @@ async function loadCourses() {
 async function loadAssignments() {
     try {
         const search = document.getElementById("searchInput")?.value || "";
+        const courseId = document.getElementById("courseFilter")?.value || "";
         const status = document.getElementById("statusFilter")?.value || "";
         const sort = document.getElementById("sortSelect")?.value || "";
 
@@ -69,6 +79,10 @@ async function loadAssignments() {
 
         if (search) {
             params.append("search", search);
+        }
+        
+        if (courseId) {
+            params.append("course_id", courseId);
         }
 
         if (status) {
@@ -377,6 +391,19 @@ async function loadNotifications() {
 
 // Filter button
 document.getElementById("filterBtn").addEventListener("click", function () {
+    loadAssignments();
+});
+
+document.getElementById("resetFilterBtn").addEventListener("click", function () {
+    document.getElementById("searchInput").value = "";
+    document.getElementById("courseFilter").value = "";
+    document.getElementById("statusFilter").value = "";
+    document.getElementById("sortSelect").value = "";
+
+    loadAssignments();
+});
+
+document.getElementById("searchInput").addEventListener("input", function () {
     loadAssignments();
 });
 
