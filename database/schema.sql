@@ -80,8 +80,8 @@ CREATE TABLE notifications (
 
 INSERT INTO users (name, email, password_hash)
 VALUES
-('Roger Yu', 'roger@example.com', 'hashed_password_123'),
-('Jacky Chen', 'jacky@example.com', 'hashed_password_456');
+('Roger', 'Roger@gmail.com', 'abcd1234'),
+('Jacky', 'Jackey@gmail.com', 'abcd1234');
 
 INSERT INTO courses (user_id, course_name, instructor)
 VALUES
@@ -125,5 +125,3 @@ SELECT
 FROM assignments a
 LEFT JOIN courses c
 ON a.course_id = c.course_id;
-
-DESCRIBE users;
