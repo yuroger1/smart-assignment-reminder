@@ -40,7 +40,7 @@ router.get("/", async (req, res) => {
 router.post("/", async (req, res) => {
     try {
         const userId = req.session.user.user_id;
-        const { course_name, instructor } = req.body;
+        const { course_name } = req.body;
 
         if (!course_name) {
             return res.status(400).json({
@@ -54,7 +54,7 @@ router.post("/", async (req, res) => {
             INSERT INTO courses (user_id, course_name, instructor)
             VALUES (?, ?, ?)
             `,
-            [userId, course_name, instructor || ""]
+            [userId, course_name, ""]
         );
 
         res.json({
@@ -77,7 +77,7 @@ router.put("/:id", async (req, res) => {
     try {
         const userId = req.session.user.user_id;
         const courseId = req.params.id;
-        const { course_name, instructor } = req.body;
+        const { course_name } = req.body;
 
         if (!course_name) {
             return res.status(400).json({
@@ -89,10 +89,10 @@ router.put("/:id", async (req, res) => {
         const [result] = await pool.execute(
             `
             UPDATE courses
-            SET course_name = ?, instructor = ?
+            SET course_name = ?
             WHERE course_id = ? AND user_id = ?
             `,
-            [course_name, instructor || "", courseId, userId]
+            [course_name, courseId, userId]
         );
 
         if (result.affectedRows === 0) {

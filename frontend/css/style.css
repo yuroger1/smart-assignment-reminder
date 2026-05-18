@@ -61,3 +61,76 @@ body {
     font-size: 2rem;
     font-weight: bold;
 }
+
+/* Reminder Panel */
+.reminder-panel {
+    border: 2px solid #d9534f;
+    background-color: #fff2f2;
+    border-radius: 10px;
+    padding: 14px;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+}
+
+.reminder-title {
+    font-size: 1.1rem;
+    font-weight: bold;
+    color: #a83232;
+    margin-bottom: 12px;
+}
+
+/* Reminder List */
+.reminder-list {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
+/* Small reminder card */
+.reminder-card {
+    min-width: 170px;
+    max-width: 220px;
+    background-color: #fff8f8;
+    border: 2px solid #555;
+    border-radius: 8px;
+    padding: 8px 10px;
+    position: relative;
+    box-shadow: 1px 2px 4px rgba(0, 0, 0, 0.15);
+}
+
+/* Colored left bar */
+.reminder-card::before {
+    content: "";
+    width: 7px;
+    height: 70%;
+    border-radius: 6px;
+    position: absolute;
+    left: 6px;
+    top: 15%;
+}
+
+/* Different reminder types */
+.reminder-card.due-soon::before {
+    background-color: #28a745;
+}
+
+.reminder-card.overdue::before {
+    background-color: #dc3545;
+}
+
+.reminder-card.due-today::before {
+    background-color: #fd7e14;
+}
+
+/* Text inside reminder card */
+.reminder-card-title {
+    font-weight: bold;
+    font-size: 0.95rem;
+    margin-left: 12px;
+    line-height: 1.2;
+}
+
+.reminder-card-time {
+    font-size: 0.85rem;
+    margin-left: 12px;
+    line-height: 1.2;
+}

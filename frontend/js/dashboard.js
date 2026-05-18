@@ -229,66 +229,55 @@ async function deleteAssignment(assignmentId) {
 }
 
 // Load due soon and overdue reminders
+// Load due soon and overdue reminders
 async function loadNotifications() {
-    try {
-        const response = await fetch("/api/notifications", {
-            method: "GET",
-            credentials: "include"
-        });
+    const response = await fetch("/api/notifications", {
+        method: "GET",
+        credentials: "include"
+    });
 
-        const data = await response.json();
+    const data = await response.json();
 
-        const notificationList = document.getElementById("notificationList");
+    const notificationList = document.getElementById("notificationList");
 
-        if (!data.success) {
-            notificationList.innerHTML = `
-                <p class="text-muted">No reminders available.</p>
-            `;
-            return;
+    if (!data.success) {
+        notificationList.innerHTML = `
+            <p class="text-muted mb-0">No reminders available.</p>
+        `;
+        return;
+    }
+
+    if (data.notifications.length === 0) {
+        notificationList.innerHTML = `
+            <p class="text-muted mb-0">No due soon or overdue assignments.</p>
+        `;
+        return;
+    }
+
+    notificationList.innerHTML = "";
+
+    data.notifications.forEach(function (notification) {
+        let cardClass = "reminder-card due-soon";
+        let displayStatus = getDueText(notification.due_date, notification.notification_type);
+
+        if (notification.notification_type === "Overdue") {
+            cardClass = "reminder-card overdue";
+            displayStatus = "OVERDUE";
+        } else if (displayStatus === "Due Today") {
+            cardClass = "reminder-card due-today";
         }
 
-        if (data.notifications.length === 0) {
-            notificationList.innerHTML = `
-                <p class="text-muted">No due soon or overdue assignments.</p>
-            `;
-            return;
-        }
-
-        notificationList.innerHTML = "";
-
-        data.notifications.forEach(function (notification) {
-            let alertClass = "alert-info";
-            let icon = "ℹ️";
-
-            if (notification.notification_type === "Overdue") {
-                alertClass = "alert-danger";
-                icon = "⚠️";
-            } else if (notification.notification_type === "Due Soon") {
-                alertClass = "alert-warning";
-                icon = "⏰";
-            }
-
-            notificationList.innerHTML += `
-                <div class="alert ${alertClass} mb-2">
-                    <strong>${icon} ${notification.notification_type}:</strong>
+        notificationList.innerHTML += `
+            <div class="${cardClass}">
+                <div class="reminder-card-title">
                     ${notification.title}
-                    <br>
-                    <small>
-                        Due Date: ${formatDate(notification.due_date)}
-                    </small>
                 </div>
-            `;
-        });
-
-    } catch (error) {
-        console.error("Load notifications error:", error);
-
-        document.getElementById("notificationList").innerHTML = `
-            <div class="alert alert-danger">
-                Failed to load reminders. Please check the backend server.
+                <div class="reminder-card-time">
+                    (${displayStatus})
+                </div>
             </div>
         `;
-    }
+    });
 }
 
 // Filter button
@@ -327,6 +316,30 @@ document.getElementById("logoutBtn").addEventListener("click", async function ()
 function formatDate(dateString) {
     const date = new Date(dateString);
     return date.toLocaleString();
+}
+
+// Convert due date into short reminder text
+function getDueText(dueDateString, notificationType) {
+    const now = new Date();
+    const dueDate = new Date(dueDateString);
+
+    const differenceMs = dueDate - now;
+    const differenceHours = Math.ceil(differenceMs / (1000 * 60 * 60));
+    const differenceDays = Math.ceil(differenceMs / (1000 * 60 * 60 * 24));
+
+    if (notificationType === "Overdue" || differenceMs < 0) {
+        return "OVERDUE";
+    }
+
+    if (differenceHours <= 24) {
+        return "Due Today";
+    }
+
+    if (differenceDays === 1) {
+        return "Due Tomorrow";
+    }
+
+    return `Due ${differenceDays} Days`;
 }
 
 function convertToMySQLDateTime(dateTimeLocalValue) {

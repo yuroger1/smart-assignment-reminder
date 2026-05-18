@@ -27,7 +27,6 @@ courseForm.addEventListener("submit", async function (event) {
     event.preventDefault();
 
     const courseName = document.getElementById("courseName").value;
-    const instructor = document.getElementById("courseInstructor").value;
 
     const response = await fetch("/api/courses", {
         method: "POST",
@@ -36,8 +35,7 @@ courseForm.addEventListener("submit", async function (event) {
         },
         credentials: "include",
         body: JSON.stringify({
-            course_name: courseName,
-            instructor: instructor
+            course_name: courseName
         })
     });
 
@@ -89,13 +87,10 @@ async function loadCourses() {
                 <div class="d-flex justify-content-between align-items-center">
                     <div>
                         <h5 class="mb-1">${course.course_name}</h5>
-                        <p class="mb-0 text-muted">
-                            Instructor: ${course.instructor || "No instructor"}
-                        </p>
                     </div>
 
                     <button class="btn btn-warning btn-sm"
-                        onclick="openEditCourseModal(${course.course_id}, '${escapeString(course.course_name)}', '${escapeString(course.instructor || "")}')">
+                        onclick="openEditCourseModal(${course.course_id}, '${escapeString(course.course_name)}')">
                         Edit
                     </button>
                 </div>
@@ -105,10 +100,9 @@ async function loadCourses() {
 }
 
 // Open edit modal and fill old course data
-function openEditCourseModal(courseId, courseName, instructor) {
+function openEditCourseModal(courseId, courseName) {
     document.getElementById("editCourseId").value = courseId;
     document.getElementById("editCourseName").value = courseName;
-    document.getElementById("editCourseInstructor").value = instructor;
 
     const editModal = new bootstrap.Modal(document.getElementById("editCourseModal"));
     editModal.show();
@@ -122,7 +116,6 @@ editCourseForm.addEventListener("submit", async function (event) {
 
     const courseId = document.getElementById("editCourseId").value;
     const courseName = document.getElementById("editCourseName").value;
-    const instructor = document.getElementById("editCourseInstructor").value;
 
     const response = await fetch(`/api/courses/${courseId}`, {
         method: "PUT",
@@ -131,8 +124,7 @@ editCourseForm.addEventListener("submit", async function (event) {
         },
         credentials: "include",
         body: JSON.stringify({
-            course_name: courseName,
-            instructor: instructor
+            course_name: courseName
         })
     });
 
