@@ -48,47 +48,57 @@ async function loadCourses() {
 
 // Load assignments from backend
 async function loadAssignments() {
-    const search = document.getElementById("searchInput")?.value || "";
-    const status = document.getElementById("statusFilter")?.value || "";
-    const sort = document.getElementById("sortSelect")?.value || "";
+    try {
+        const search = document.getElementById("searchInput")?.value || "";
+        const status = document.getElementById("statusFilter")?.value || "";
+        const sort = document.getElementById("sortSelect")?.value || "";
 
-    let url = "/api/assignments?";
-    const params = new URLSearchParams();
+        const params = new URLSearchParams();
 
-    if (search) {
-        params.append("search", search);
-    }
+        if (search) {
+            params.append("search", search);
+        }
 
-    if (status) {
-        params.append("status", status);
-    }
+        if (status) {
+            params.append("status", status);
+        }
 
-    if (sort) {
-        params.append("sort", sort);
-    }
+        if (sort) {
+            params.append("sort", sort);
+        }
 
-    url += params.toString();
+        const url = "/api/assignments?" + params.toString();
 
-    const response = await fetch(url, {
-        method: "GET",
-        credentials: "include"
-    });
+        const response = await fetch(url, {
+            method: "GET",
+            credentials: "include"
+        });
 
-    const data = await response.json();
+        const data = await response.json();
 
-    const assignmentList = document.getElementById("assignmentList");
+        const assignmentList = document.getElementById("assignmentList");
 
-    if (!data.success) {
-        assignmentList.innerHTML = `
+        if (!data.success) {
+            assignmentList.innerHTML = `
+                <div class="alert alert-danger">
+                    ${data.message}
+                </div>
+            `;
+            return;
+        }
+
+        displayAssignments(data.assignments);
+        updateSummary(data.assignments);
+
+    } catch (error) {
+        console.error("Load assignments error:", error);
+
+        document.getElementById("assignmentList").innerHTML = `
             <div class="alert alert-danger">
-                ${data.message}
+                Failed to load assignments. Please check the backend server.
             </div>
         `;
-        return;
     }
-
-    displayAssignments(data.assignments);
-    updateSummary(data.assignments);
 }
 
 // Display assignment cards
@@ -122,18 +132,23 @@ function displayAssignments(assignments) {
                 <div class="d-flex justify-content-between align-items-start">
                     <div>
                         <h5>${assignment.title}</h5>
+
                         <p class="mb-1">
                             <strong>Course:</strong> ${assignment.course_name || "No Course"}
                         </p>
+
                         <p class="mb-1">
                             <strong>Description:</strong> ${assignment.description || "No description"}
                         </p>
+
                         <p class="mb-1">
                             <strong>Due Date:</strong> ${formatDate(assignment.due_date)}
                         </p>
+
                         <p class="mb-1">
                             <strong>Priority:</strong> ${assignment.priority}
                         </p>
+
                         <p class="mb-1">
                             <strong>Status:</strong>
                             <span class="${statusClass}">
@@ -162,16 +177,24 @@ function displayAssignments(assignments) {
 // Update summary cards
 function updateSummary(assignments) {
     const total = assignments.length;
-    const dueSoon = assignments.filter(a => a.deadline_status === "Due Soon").length;
-    const overdue = assignments.filter(a => a.deadline_status === "Overdue").length;
-    const completed = assignments.filter(a => a.deadline_status === "Completed").length;
+
+    const dueSoon = assignments.filter(function (assignment) {
+        return assignment.deadline_status === "Due Soon";
+    }).length;
+
+    const overdue = assignments.filter(function (assignment) {
+        return assignment.deadline_status === "Overdue";
+    }).length;
+
+    const completed = assignments.filter(function (assignment) {
+        return assignment.deadline_status === "Completed";
+    }).length;
 
     document.getElementById("totalCount").textContent = total;
     document.getElementById("dueSoonCount").textContent = dueSoon;
     document.getElementById("overdueCount").textContent = overdue;
     document.getElementById("completedCount").textContent = completed;
 }
-
 // Add assignment
 const assignmentForm = document.getElementById("assignmentForm");
 
@@ -181,7 +204,8 @@ assignmentForm.addEventListener("submit", async function (event) {
     const courseId = document.getElementById("assignmentCourse").value;
     const title = document.getElementById("assignmentTitle").value;
     const description = document.getElementById("assignmentDescription").value;
-    const dueDate = document.getElementById("assignmentDueDate").value;
+    const dueDateInput = document.getElementById("assignmentDueDate").value;
+    const dueDate = dueDateInput.replace("T", " ") + ":00";
     const priority = document.getElementById("assignmentPriority").value;
 
     const response = await fetch("/api/assignments", {

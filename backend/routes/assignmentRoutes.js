@@ -61,11 +61,12 @@ router.get("/", async (req, res) => {
 
         res.json({
             success: true,
-            assignments
+            assignments: assignments
         });
 
     } catch (error) {
         console.error(error);
+
         res.status(500).json({
             success: false,
             message: "Failed to get assignments."

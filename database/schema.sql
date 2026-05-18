@@ -125,3 +125,5 @@ SELECT
 FROM assignments a
 LEFT JOIN courses c
 ON a.course_id = c.course_id;
+
+DESCRIBE users;
