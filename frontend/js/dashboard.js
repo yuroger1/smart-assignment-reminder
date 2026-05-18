@@ -1,7 +1,6 @@
 // When dashboard page loads, run these functions
 document.addEventListener("DOMContentLoaded", function () {
     checkLogin();
-    loadCourses();
     loadAssignments();
     loadNotifications();
 });
@@ -21,50 +20,6 @@ async function checkLogin() {
     }
 
     document.getElementById("userName").textContent = `Hello, ${data.user.name}`;
-}
-
-// Load courses into the course dropdown
-async function loadCourses() {
-    const response = await fetch("/api/courses", {
-        method: "GET",
-        credentials: "include"
-    });
-
-    const data = await response.json();
-
-    const courseSelect = document.getElementById("assignmentCourse");
-    const editCourseSelect = document.getElementById("editAssignmentCourse");
-    const courseFilter = document.getElementById("courseFilter");
-
-    courseSelect.innerHTML = `<option value="">No Course</option>`;
-
-    if (editCourseSelect) {
-        editCourseSelect.innerHTML = `<option value="">No Course</option>`;
-    }
-
-    if (courseFilter) {
-        courseFilter.innerHTML = `<option value="">All Courses</option>`;
-    }
-
-    if (data.success) {
-        data.courses.forEach(function (course) {
-            const option = `
-                <option value="${course.course_id}">
-                    ${course.course_name}
-                </option>
-            `;
-
-            courseSelect.innerHTML += option;
-
-            if (editCourseSelect) {
-                editCourseSelect.innerHTML += option;
-            }
-
-            if (courseFilter) {
-                courseFilter.innerHTML += option;
-            }
-        });
-    }
 }
 
 // Load assignments from backend
@@ -232,77 +187,6 @@ function updateSummary(assignments) {
     document.getElementById("overdueCount").textContent = overdue;
     document.getElementById("completedCount").textContent = completed;
 }
-// Add assignment
-const assignmentForm = document.getElementById("assignmentForm");
-
-assignmentForm.addEventListener("submit", async function (event) {
-    event.preventDefault();
-
-    const courseId = document.getElementById("assignmentCourse").value;
-    const title = document.getElementById("assignmentTitle").value;
-    const description = document.getElementById("assignmentDescription").value;
-    const dueDateInput = document.getElementById("assignmentDueDate").value;
-    const dueDate = dueDateInput.replace("T", " ") + ":00";
-    const priority = document.getElementById("assignmentPriority").value;
-
-    const response = await fetch("/api/assignments", {
-        method: "POST",
-        headers: {
-            "Content-Type": "application/json"
-        },
-        credentials: "include",
-        body: JSON.stringify({
-            course_id: courseId || null,
-            title: title,
-            description: description,
-            due_date: dueDate,
-            priority: priority
-        })
-    });
-
-    const data = await response.json();
-
-    if (data.success) {
-        alert("Assignment added successfully.");
-        assignmentForm.reset();
-        loadAssignments();
-        loadNotifications();
-    } else {
-        alert(data.message);
-    }
-});
-
-// Add course
-const courseForm = document.getElementById("courseForm");
-
-courseForm.addEventListener("submit", async function (event) {
-    event.preventDefault();
-
-    const courseName = document.getElementById("courseName").value;
-    const instructor = document.getElementById("courseInstructor").value;
-
-    const response = await fetch("/api/courses", {
-        method: "POST",
-        headers: {
-            "Content-Type": "application/json"
-        },
-        credentials: "include",
-        body: JSON.stringify({
-            course_name: courseName,
-            instructor: instructor
-        })
-    });
-
-    const data = await response.json();
-
-    if (data.success) {
-        alert("Course added successfully.");
-        courseForm.reset();
-        loadCourses();
-    } else {
-        alert(data.message);
-    }
-});
 
 // Complete assignment
 async function completeAssignment(assignmentId) {

@@ -58,67 +58,20 @@
         </div>
     </div>
 
-    <!-- Add Assignment Form -->
+    <!-- Quick Actions -->
     <div class="card shadow-sm p-4 mb-4">
-        <h4>Add New Assignment</h4>
+        <h4>Quick Actions</h4>
+        <p class="text-muted mb-3">
+            Use these pages to add new assignments or courses.
+        </p>
 
-        <form id="assignmentForm" class="row g-3 mt-2">
-            <div class="col-md-6">
-                <label class="form-label">Assignment Title</label>
-                <input type="text" id="assignmentTitle" class="form-control" required>
-            </div>
+        <a href="add-assignment.html" class="btn btn-primary me-2">
+            Add New Assignment
+        </a>
 
-            <div class="col-md-6">
-                <label class="form-label">Course</label>
-                <select id="assignmentCourse" class="form-select">
-                    <option value="">No Course</option>
-                </select>
-            </div>
-
-            <div class="col-md-12">
-                <label class="form-label">Description</label>
-                <textarea id="assignmentDescription" class="form-control" rows="2"></textarea>
-            </div>
-
-            <div class="col-md-6">
-                <label class="form-label">Due Date</label>
-                <input type="datetime-local" id="assignmentDueDate" class="form-control" required>
-            </div>
-
-            <div class="col-md-6">
-                <label class="form-label">Priority</label>
-                <select id="assignmentPriority" class="form-select">
-                    <option value="Low">Low</option>
-                    <option value="Medium" selected>Medium</option>
-                    <option value="High">High</option>
-                </select>
-            </div>
-
-            <div class="col-md-12">
-                <button type="submit" class="btn btn-primary">Add Assignment</button>
-            </div>
-        </form>
-    </div>
-
-    <!-- Add Course Form -->
-    <div class="card shadow-sm p-4 mb-4">
-        <h4>Add Course</h4>
-
-        <form id="courseForm" class="row g-3 mt-2">
-            <div class="col-md-5">
-                <label class="form-label">Course Name</label>
-                <input type="text" id="courseName" class="form-control" required>
-            </div>
-
-            <div class="col-md-5">
-                <label class="form-label">Instructor</label>
-                <input type="text" id="courseInstructor" class="form-control">
-            </div>
-
-            <div class="col-md-2 d-flex align-items-end">
-                <button type="submit" class="btn btn-secondary w-100">Add Course</button>
-            </div>
-        </form>
+        <a href="add-course.html" class="btn btn-secondary">
+            Add Course
+        </a>
     </div>
 
     <!-- Search and Filter -->
