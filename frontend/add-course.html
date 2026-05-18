@@ -28,7 +28,8 @@
 
 <div class="container mt-4">
 
-    <div class="card shadow-sm p-4">
+    <!-- Add Course Form -->
+    <div class="card shadow-sm p-4 mb-4">
         <h3>Add Course</h3>
         <p class="text-muted">
             Add a course so you can connect assignments to the correct class.
@@ -54,8 +55,58 @@
         </form>
     </div>
 
+    <!-- Course List -->
+    <div class="card shadow-sm p-4 mb-4">
+        <h3>My Courses</h3>
+        <p class="text-muted">
+            You can edit existing course information here.
+        </p>
+
+        <div id="courseList">
+            <p class="text-muted">Loading courses...</p>
+        </div>
+    </div>
+
 </div>
 
+<!-- Edit Course Modal -->
+<div class="modal fade" id="editCourseModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+
+            <div class="modal-header">
+                <h5 class="modal-title">Edit Course</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+
+            <div class="modal-body">
+                <form id="editCourseForm">
+
+                    <input type="hidden" id="editCourseId">
+
+                    <div class="mb-3">
+                        <label class="form-label">Course Name</label>
+                        <input type="text" id="editCourseName" class="form-control" required>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Instructor</label>
+                        <input type="text" id="editCourseInstructor" class="form-control">
+                    </div>
+
+                    <button type="submit" class="btn btn-primary">Save Changes</button>
+
+                </form>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+<!-- Bootstrap JS for Modal -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
+<!-- Page JS -->
 <script src="js/add-course.js"></script>
 </body>
 </html>

@@ -13,7 +13,7 @@ router.get("/", async (req, res) => {
 
         const [courses] = await pool.execute(
             `
-            SELECT *
+            SELECT course_id, course_name, instructor, created_at
             FROM courses
             WHERE user_id = ?
             ORDER BY course_name ASC
@@ -23,11 +23,12 @@ router.get("/", async (req, res) => {
 
         res.json({
             success: true,
-            courses
+            courses: courses
         });
 
     } catch (error) {
-        console.error(error);
+        console.error("Get courses error:", error);
+
         res.status(500).json({
             success: false,
             message: "Failed to get courses."
@@ -62,7 +63,8 @@ router.post("/", async (req, res) => {
         });
 
     } catch (error) {
-        console.error(error);
+        console.error("Add course error:", error);
+
         res.status(500).json({
             success: false,
             message: "Failed to add course."
@@ -77,7 +79,14 @@ router.put("/:id", async (req, res) => {
         const courseId = req.params.id;
         const { course_name, instructor } = req.body;
 
-        await pool.execute(
+        if (!course_name) {
+            return res.status(400).json({
+                success: false,
+                message: "Course name is required."
+            });
+        }
+
+        const [result] = await pool.execute(
             `
             UPDATE courses
             SET course_name = ?, instructor = ?
@@ -86,44 +95,24 @@ router.put("/:id", async (req, res) => {
             [course_name, instructor || "", courseId, userId]
         );
 
+        if (result.affectedRows === 0) {
+            return res.status(404).json({
+                success: false,
+                message: "Course not found."
+            });
+        }
+
         res.json({
             success: true,
             message: "Course updated successfully."
         });
 
     } catch (error) {
-        console.error(error);
+        console.error("Update course error:", error);
+
         res.status(500).json({
             success: false,
             message: "Failed to update course."
-        });
-    }
-});
-
-// Delete course
-router.delete("/:id", async (req, res) => {
-    try {
-        const userId = req.session.user.user_id;
-        const courseId = req.params.id;
-
-        await pool.execute(
-            `
-            DELETE FROM courses
-            WHERE course_id = ? AND user_id = ?
-            `,
-            [courseId, userId]
-        );
-
-        res.json({
-            success: true,
-            message: "Course deleted successfully."
-        });
-
-    } catch (error) {
-        console.error(error);
-        res.status(500).json({
-            success: false,
-            message: "Failed to delete course."
         });
     }
 });
