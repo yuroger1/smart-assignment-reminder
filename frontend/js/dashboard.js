@@ -127,6 +127,15 @@ function displayAssignments(assignments) {
             statusClass = "status-completed";
         }
 
+        const completeButton = assignment.deadline_status === "Completed"
+            ? ""
+            : `
+                <button class="btn btn-success btn-sm mb-2"
+                    onclick="completeAssignment(${assignment.assignment_id})">
+                    Complete
+                </button>
+            `;
+
         assignmentList.innerHTML += `
             <div class="card assignment-card ${priorityClass} shadow-sm p-3 mb-3">
                 <div class="d-flex justify-content-between align-items-start">
@@ -158,10 +167,7 @@ function displayAssignments(assignments) {
                     </div>
 
                     <div>
-                        <button class="btn btn-success btn-sm mb-2"
-                            onclick="completeAssignment(${assignment.assignment_id})">
-                            Complete
-                        </button>
+                        ${completeButton}
 
                         <button class="btn btn-danger btn-sm"
                             onclick="deleteAssignment(${assignment.assignment_id})">
