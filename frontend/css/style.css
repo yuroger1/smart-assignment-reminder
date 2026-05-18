@@ -134,3 +134,195 @@ body {
     margin-left: 12px;
     line-height: 1.2;
 }
+
+/* Navbar Brand Logo */
+.brand-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    text-decoration: none;
+}
+
+.brand-logo {
+    width: 70px;
+    height: auto;
+    object-fit: contain;
+}
+
+.brand-text {
+    line-height: 1.05;
+}
+
+.brand-main {
+    font-size: 1.6rem;
+    font-weight: 800;
+    color: #071d3a;
+    letter-spacing: 0.3px;
+}
+
+.brand-sub {
+    font-size: 1.45rem;
+    font-weight: 400;
+    color: #071d3a;
+    letter-spacing: 0.3px;
+}
+
+.navbar {
+    min-height: 82px;
+}
+
+.navbar-brand {
+    margin-right: 0;
+}
+
+/* Responsive layout for small screens */
+@media (max-width: 576px) {
+    .brand-logo {
+        width: 52px;
+    }
+
+    .brand-main {
+        font-size: 1.2rem;
+    }
+
+    .brand-sub {
+        font-size: 1.1rem;
+    }
+
+    .navbar {
+        min-height: 70px;
+    }
+}
+
+/* Hero background */
+.homepage-hero {
+    position: relative;
+    min-height: calc(100vh - 78px);
+    background-image: url("../images/homepage-bg.png");
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+
+    display: flex;
+    align-items: center;
+    overflow: hidden;
+}
+
+/* Dark layer on image */
+.homepage-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+
+    background: rgba(0, 0, 0, 0.45);
+    z-index: 1;
+}
+
+/* Content above overlay */
+.homepage-content {
+    position: relative;
+    z-index: 2;
+    color: white;
+}
+
+/* Big title */
+.homepage-title {
+    font-size: 3.8rem;
+    font-weight: 800;
+    line-height: 1.15;
+    margin-bottom: 24px;
+    text-shadow: 0 4px 12px rgba(0, 0, 0, 0.45);
+}
+
+/* Description text */
+.homepage-description {
+    font-size: 1.25rem;
+    line-height: 1.6;
+    max-width: 720px;
+    margin-bottom: 30px;
+    color: #f1f1f1;
+    text-shadow: 0 3px 10px rgba(0, 0, 0, 0.45);
+}
+
+/* Buttons */
+.homepage-buttons .btn {
+    border-radius: 8px;
+    font-weight: 500;
+}
+
+/* Glass feature card */
+.feature-glass-card {
+    background: rgba(8, 22, 40, 0.65);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+
+    border: 1px solid rgba(75, 160, 255, 0.6);
+    border-radius: 16px;
+
+    padding: 34px 42px;
+    color: white;
+
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.35);
+}
+
+.feature-glass-card h3 {
+    font-size: 1.75rem;
+    font-weight: 700;
+    margin-bottom: 22px;
+}
+
+.feature-glass-card ul {
+    padding-left: 22px;
+    margin-bottom: 0;
+}
+
+.feature-glass-card li {
+    font-size: 1.1rem;
+    margin-bottom: 10px;
+    line-height: 1.4;
+}
+
+/* Responsive */
+@media (max-width: 992px) {
+    .homepage-title {
+        font-size: 3rem;
+    }
+
+    .homepage-description {
+        font-size: 1.1rem;
+    }
+
+    .feature-glass-card {
+        padding: 28px 32px;
+    }
+}
+
+@media (max-width: 576px) {
+    .homepage-navbar {
+        min-height: auto;
+        padding: 12px 0;
+    }
+
+    .homepage-brand {
+        font-size: 1.1rem;
+    }
+
+    .homepage-hero {
+        min-height: calc(100vh - 70px);
+        padding: 60px 0;
+    }
+
+    .homepage-title {
+        font-size: 2.35rem;
+    }
+
+    .homepage-description {
+        font-size: 1rem;
+    }
+
+    .homepage-buttons .btn {
+        margin-bottom: 10px;
+    }
+}

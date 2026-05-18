@@ -15,7 +15,14 @@
 
 <nav class="navbar navbar-expand-lg bg-white shadow-sm">
     <div class="container">
-        <a class="navbar-brand" href="index.html">Smart Assignment Reminder</a>
+        <a class="navbar-brand brand-wrapper" href="index.html">
+            <img src="images/logo.png" alt="Smart Assignment Reminder Logo" class="brand-logo">
+
+            <div class="brand-text">
+                <div class="brand-main">Smart Assignment</div>
+                <div class="brand-sub">Reminder</div>
+            </div>
+        </a>
         <div>
             <a href="login.html" class="btn btn-outline-primary me-2">Login</a>
             <a href="register.html" class="btn btn-primary">Sign Up</a>
@@ -23,32 +30,55 @@
     </div>
 </nav>
 
-<section class="hero-section">
-    <div class="container">
+<!-- Hero Section -->
+<section class="homepage-hero">
+
+    <!-- Dark overlay -->
+    <div class="homepage-overlay"></div>
+
+    <div class="container homepage-content">
         <div class="row align-items-center">
-            <div class="col-md-6">
-                <h1 class="display-5 fw-bold">Never Miss Another Assignment Deadline</h1>
-                <p class="lead mt-3">
-                    Smart Assignment Reminder helps university students manage assignments,
-                    due dates, courses, and reminders in one dashboard.
+
+            <!-- Left Text -->
+            <div class="col-lg-6">
+                <h1 class="homepage-title">
+                    Never Miss Another<br>
+                    Assignment Deadline
+                </h1>
+
+                <p class="homepage-description">
+                    Smart Assignment Reminder helps university students manage
+                    assignments, due dates, courses, and reminders in one dashboard.
                 </p>
-                <a href="register.html" class="btn btn-primary btn-lg mt-3">Get Started</a>
-                <a href="login.html" class="btn btn-outline-secondary btn-lg mt-3 ms-2">Login</a>
+
+                <div class="homepage-buttons">
+                    <a href="register.html" class="btn btn-primary btn-lg me-2 px-4">
+                        Get Started
+                    </a>
+
+                    <a href="login.html" class="btn btn-outline-light btn-lg px-4">
+                        Log in
+                    </a>
+                </div>
             </div>
 
-            <div class="col-md-6">
-                <div class="card shadow p-4">
-                    <h4>Key Features</h4>
-                    <ul class="mt-3">
+            <!-- Right Feature Card -->
+            <div class="col-lg-5 offset-lg-1 mt-5 mt-lg-0">
+                <div class="feature-glass-card">
+                    <h3>Key Features</h3>
+
+                    <ul>
                         <li>Add and manage assignments</li>
-                        <li>Track due dates and overdue work</li>
-                        <li>Filter assignments by course or status</li>
-                        <li>View due soon reminders</li>
+                        <li>Track due dates and course work</li>
+                        <li>Receive smart reminders and alerts</li>
+                        <li>View all in one dashboard</li>
                     </ul>
                 </div>
             </div>
+
         </div>
     </div>
+
 </section>
 
 </body>
