@@ -83,12 +83,12 @@ VALUES
 ('Roger', 'Roger@gmail.com', 'abcd1234'),
 ('Jacky', 'Jackey@gmail.com', 'abcd1234');
 
-INSERT INTO courses (user_id, course_name, instructor)
+INSERT INTO courses (user_id, course_name)
 VALUES
-(1, 'Web-based Programming', 'Professor Wang'),
-(1, 'Database Systems', 'Professor Lin'),
-(1, 'Introduction to Cryptography', 'Professor Chen'),
-(2, 'Computer Networks', 'Professor Lee');
+(1, 'Web-based Programming'),
+(1, 'Database Systems'),
+(1, 'Introduction to Cryptography'),
+(2, 'Computer Networks');
 
 INSERT INTO assignments 
 (user_id, course_id, title, description, due_date, priority, status)
