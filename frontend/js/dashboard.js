@@ -346,47 +346,65 @@ async function deleteAssignment(assignmentId) {
 
 // Load due soon and overdue reminders
 async function loadNotifications() {
-    const response = await fetch("/api/notifications", {
-        method: "GET",
-        credentials: "include"
-    });
+    try {
+        const response = await fetch("/api/notifications", {
+            method: "GET",
+            credentials: "include"
+        });
 
-    const data = await response.json();
+        const data = await response.json();
 
-    const notificationList = document.getElementById("notificationList");
+        const notificationList = document.getElementById("notificationList");
 
-    if (!data.success) {
-        notificationList.innerHTML = `
-            <p class="text-muted">No reminders available.</p>
-        `;
-        return;
-    }
-
-    if (data.notifications.length === 0) {
-        notificationList.innerHTML = `
-            <p class="text-muted">No due soon or overdue assignments.</p>
-        `;
-        return;
-    }
-
-    notificationList.innerHTML = "";
-
-    data.notifications.forEach(function (notification) {
-        let alertClass = "alert-info";
-
-        if (notification.notification_type === "Overdue") {
-            alertClass = "alert-danger";
-        } else if (notification.notification_type === "Due Soon") {
-            alertClass = "alert-warning";
+        if (!data.success) {
+            notificationList.innerHTML = `
+                <p class="text-muted">No reminders available.</p>
+            `;
+            return;
         }
 
-        notificationList.innerHTML += `
-            <div class="alert ${alertClass}">
-                <strong>${notification.notification_type}:</strong>
-                ${notification.title} - ${formatDate(notification.due_date)}
+        if (data.notifications.length === 0) {
+            notificationList.innerHTML = `
+                <p class="text-muted">No due soon or overdue assignments.</p>
+            `;
+            return;
+        }
+
+        notificationList.innerHTML = "";
+
+        data.notifications.forEach(function (notification) {
+            let alertClass = "alert-info";
+            let icon = "ℹ️";
+
+            if (notification.notification_type === "Overdue") {
+                alertClass = "alert-danger";
+                icon = "⚠️";
+            } else if (notification.notification_type === "Due Soon") {
+                alertClass = "alert-warning";
+                icon = "⏰";
+            }
+
+            notificationList.innerHTML += `
+                <div class="alert ${alertClass} mb-2">
+                    <strong>${icon} ${notification.notification_type}:</strong>
+                    ${notification.title}
+                    <br>
+                    <small>
+                        Due Date: ${formatDate(notification.due_date)}
+                    </small>
+                </div>
+            `;
+        });
+
+    } catch (error) {
+        console.error("Load notifications error:", error);
+
+        document.getElementById("notificationList").innerHTML = `
+            <div class="alert alert-danger">
+                Failed to load reminders. Please check the backend server.
             </div>
         `;
-    });
+    }
 }
 
 // Filter button
