@@ -1,6 +1,7 @@
 // When dashboard page loads, run these functions
-document.addEventListener("DOMContentLoaded", function () {
-    checkLogin();
+document.addEventListener("DOMContentLoaded", async function () {
+    await checkLogin();
+    await loadCourses();
     loadAssignments();
     loadNotifications();
 });
@@ -20,6 +21,56 @@ async function checkLogin() {
     }
 
     document.getElementById("userName").textContent = `Hello, ${data.user.name}`;
+}
+
+// Load courses for Edit Assignment modal and Course Filter
+async function loadCourses() {
+    try {
+        const response = await fetch("/api/courses", {
+            method: "GET",
+            credentials: "include"
+        });
+
+        const data = await response.json();
+
+        if (!data.success) {
+            console.error("Failed to load courses:", data.message);
+            return;
+        }
+
+        // Course dropdown in Edit Assignment modal
+        const editCourseSelect = document.getElementById("editAssignmentCourse");
+
+        if (editCourseSelect) {
+            editCourseSelect.innerHTML = `<option value="">No Course</option>`;
+        }
+
+        // Course filter in Dashboard, if you have it
+        const courseFilter = document.getElementById("courseFilter");
+
+        if (courseFilter) {
+            courseFilter.innerHTML = `<option value="">All Courses</option>`;
+        }
+
+        data.courses.forEach(function (course) {
+            const option = `
+                <option value="${course.course_id}">
+                    ${course.course_name}
+                </option>
+            `;
+
+            if (editCourseSelect) {
+                editCourseSelect.innerHTML += option;
+            }
+
+            if (courseFilter) {
+                courseFilter.innerHTML += option;
+            }
+        });
+
+    } catch (error) {
+        console.error("Load courses error:", error);
+    }
 }
 
 // Load assignments from backend
@@ -229,7 +280,6 @@ async function deleteAssignment(assignmentId) {
 }
 
 // Load due soon and overdue reminders
-// Load due soon and overdue reminders
 async function loadNotifications() {
     const response = await fetch("/api/notifications", {
         method: "GET",
@@ -257,23 +307,28 @@ async function loadNotifications() {
     notificationList.innerHTML = "";
 
     data.notifications.forEach(function (notification) {
-        let cardClass = "reminder-card due-soon";
-        let displayStatus = getDueText(notification.due_date, notification.notification_type);
+        const displayStatus = getDueText(
+            notification.due_date,
+            notification.notification_type
+        );
 
-        if (notification.notification_type === "Overdue") {
-            cardClass = "reminder-card overdue";
-            displayStatus = "OVERDUE";
-        } else if (displayStatus === "Due Today") {
-            cardClass = "reminder-card due-today";
-        }
+        const emoji = getReminderEmoji(
+            notification.due_date,
+            notification.notification_type
+        );
 
         notificationList.innerHTML += `
-            <div class="${cardClass}">
-                <div class="reminder-card-title">
-                    ${notification.title}
-                </div>
-                <div class="reminder-card-time">
-                    (${displayStatus})
+            <div class="reminder-card">
+                <div class="reminder-emoji">${emoji}</div>
+
+                <div class="reminder-content">
+                    <div class="reminder-card-title">
+                        ${notification.title}
+                    </div>
+
+                    <div class="reminder-card-time">
+                        (${displayStatus})
+                    </div>
                 </div>
             </div>
         `;
@@ -289,7 +344,7 @@ document.getElementById("resetFilterBtn").addEventListener("click", function () 
     document.getElementById("searchInput").value = "";
     document.getElementById("courseFilter").value = "";
     document.getElementById("statusFilter").value = "";
-    document.getElementById("sortSelect").value = "";
+    document.getElementById("sortSelect").value = "due_date";
 
     loadAssignments();
 });
@@ -342,6 +397,25 @@ function getDueText(dueDateString, notificationType) {
     return `Due ${differenceDays} Days`;
 }
 
+// Choose emoji for reminder status
+function getReminderEmoji(dueDateString, notificationType) {
+    const now = new Date();
+    const dueDate = new Date(dueDateString);
+
+    const differenceMs = dueDate - now;
+    const differenceHours = Math.ceil(differenceMs / (1000 * 60 * 60));
+
+    if (notificationType === "Overdue" || differenceMs < 0) {
+        return "❗";
+    }
+
+    if (differenceHours <= 24) {
+        return "⚠️";
+    }
+
+    return "⏰";
+}
+
 function convertToMySQLDateTime(dateTimeLocalValue) {
     return dateTimeLocalValue.replace("T", " ") + ":00";
 }
@@ -356,6 +430,9 @@ function convertToDateTimeLocal(dateString) {
 }
 
 async function openEditModal(assignmentId) {
+    // Make sure course options are loaded before setting selected value
+    await loadCourses();
+
     const response = await fetch(`/api/assignments/${assignmentId}`, {
         method: "GET",
         credentials: "include"
@@ -377,10 +454,12 @@ async function openEditModal(assignmentId) {
     document.getElementById("editAssignmentPriority").value = assignment.priority;
     document.getElementById("editAssignmentStatus").value = assignment.status;
 
+    const editCourseSelect = document.getElementById("editAssignmentCourse");
+
     if (assignment.course_id) {
-        document.getElementById("editAssignmentCourse").value = assignment.course_id;
+        editCourseSelect.value = assignment.course_id;
     } else {
-        document.getElementById("editAssignmentCourse").value = "";
+        editCourseSelect.value = "";
     }
 
     const editModal = new bootstrap.Modal(document.getElementById("editAssignmentModal"));

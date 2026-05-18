@@ -51,10 +51,10 @@ router.get("/", async (req, res) => {
             params.push(status);
         }
 
-        if (sort === "due_date") {
-            sql += " ORDER BY a.due_date ASC";
-        } else {
+        if (sort === "newest") {
             sql += " ORDER BY a.created_at DESC";
+        } else {
+            sql += " ORDER BY a.due_date ASC";
         }
 
         const [assignments] = await pool.execute(sql, params);
