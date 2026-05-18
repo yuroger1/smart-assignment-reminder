@@ -1,0 +1,63 @@
+body {
+    background-color: #f7f8fa;
+    font-family: Arial, sans-serif;
+}
+
+.navbar-brand {
+    font-weight: bold;
+}
+
+.hero-section {
+    min-height: 80vh;
+    display: flex;
+    align-items: center;
+}
+
+.card {
+    border-radius: 12px;
+}
+
+.assignment-card {
+    border-left: 5px solid #6c757d;
+}
+
+.assignment-card.high {
+    border-left-color: #dc3545;
+}
+
+.assignment-card.medium {
+    border-left-color: #ffc107;
+}
+
+.assignment-card.low {
+    border-left-color: #198754;
+}
+
+.status-overdue {
+    color: #dc3545;
+    font-weight: bold;
+}
+
+.status-due-soon {
+    color: #fd7e14;
+    font-weight: bold;
+}
+
+.status-upcoming {
+    color: #0d6efd;
+    font-weight: bold;
+}
+
+.status-completed {
+    color: #198754;
+    font-weight: bold;
+}
+
+.summary-card {
+    text-align: center;
+}
+
+.summary-number {
+    font-size: 2rem;
+    font-weight: bold;
+}
