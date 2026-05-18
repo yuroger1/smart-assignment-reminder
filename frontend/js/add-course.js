@@ -44,8 +44,6 @@ courseForm.addEventListener("submit", async function (event) {
     if (data.success) {
         alert("Course added successfully.");
         courseForm.reset();
-
-        // Reload course list after adding a new course
         loadCourses();
     } else {
         alert(data.message);
@@ -89,10 +87,17 @@ async function loadCourses() {
                         <h5 class="mb-1">${course.course_name}</h5>
                     </div>
 
-                    <button class="btn btn-warning btn-sm"
-                        onclick="openEditCourseModal(${course.course_id}, '${escapeString(course.course_name)}')">
-                        Edit
-                    </button>
+                    <div class="d-flex gap-2">
+                        <button class="btn btn-warning btn-sm"
+                            onclick="openEditCourseModal(${course.course_id}, '${escapeString(course.course_name)}')">
+                            Edit
+                        </button>
+
+                        <button class="btn btn-danger btn-sm"
+                            onclick="deleteCourse(${course.course_id})">
+                            Delete
+                        </button>
+                    </div>
                 </div>
             </div>
         `;
@@ -137,12 +142,36 @@ editCourseForm.addEventListener("submit", async function (event) {
         const modal = bootstrap.Modal.getInstance(modalElement);
         modal.hide();
 
-        // Reload course list after editing
         loadCourses();
     } else {
         alert(data.message);
     }
 });
+
+// Delete course
+async function deleteCourse(courseId) {
+    const confirmDelete = confirm(
+        "Are you sure you want to delete this course? Assignments using this course will become No Course."
+    );
+
+    if (!confirmDelete) {
+        return;
+    }
+
+    const response = await fetch(`/api/courses/${courseId}`, {
+        method: "DELETE",
+        credentials: "include"
+    });
+
+    const data = await response.json();
+
+    if (data.success) {
+        alert("Course deleted successfully.");
+        loadCourses();
+    } else {
+        alert(data.message);
+    }
+}
 
 // Logout
 document.getElementById("logoutBtn").addEventListener("click", async function () {
