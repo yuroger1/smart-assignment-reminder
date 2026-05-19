@@ -364,3 +364,31 @@ body {
         margin-bottom: 10px;
     }
 }
+
+/* Assignment card action buttons */
+.assignment-actions {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 8px;
+    white-space: nowrap;
+    flex-shrink: 0;
+}
+
+.assignment-actions .btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    height: 38px;
+    line-height: 1;
+    padding: 6px 12px;
+}
+
+/* Mobile layout */
+@media (max-width: 768px) {
+    .assignment-actions {
+        margin-top: 12px;
+        justify-content: flex-start;
+        flex-wrap: wrap;
+    }
+}

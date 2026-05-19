@@ -24,8 +24,10 @@ router.get("/", async (req, res) => {
                 c.course_name,
                 CASE
                     WHEN a.status = 'Completed' THEN 'Completed'
-                    WHEN a.due_date < NOW() THEN 'Overdue'
-                    WHEN a.due_date BETWEEN NOW() AND DATE_ADD(NOW(), INTERVAL 3 DAY) THEN 'Due Soon'
+                    WHEN a.due_date < DATE_ADD(UTC_TIMESTAMP(), INTERVAL 8 HOUR) THEN 'Overdue'
+                    WHEN a.due_date BETWEEN DATE_ADD(UTC_TIMESTAMP(), INTERVAL 8 HOUR)
+                        AND DATE_ADD(DATE_ADD(UTC_TIMESTAMP(), INTERVAL 8 HOUR), INTERVAL 3 DAY)
+                        THEN 'Due Soon'
                     ELSE 'Upcoming'
                 END AS deadline_status
             FROM assignments a

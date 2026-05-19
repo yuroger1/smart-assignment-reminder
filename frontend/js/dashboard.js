@@ -162,7 +162,7 @@ function displayAssignments(assignments) {
         const completeButton = assignment.deadline_status === "Completed"
             ? ""
             : `
-                <button class="btn btn-success btn-sm mb-2"
+                <button class="btn btn-success btn-sm"
                     onclick="completeAssignment(${assignment.assignment_id})">
                     Complete
                 </button>
@@ -198,10 +198,10 @@ function displayAssignments(assignments) {
                         </p>
                     </div>
 
-                    <div>
+                    <div class="assignment-actions">
                         ${completeButton}
 
-                        <button class="btn btn-warning btn-sm mb-2"
+                        <button class="btn btn-warning btn-sm"
                             onclick="openEditModal(${assignment.assignment_id})">
                             Edit
                         </button>
@@ -367,16 +367,59 @@ document.getElementById("logoutBtn").addEventListener("click", async function ()
     }
 });
 
-// Format date
+// Format MySQL DATETIME string as GMT+8 display time
 function formatDate(dateString) {
+    if (!dateString) {
+        return "";
+    }
+
+    // If backend returns "2026-05-20 16:00:00"
+    if (typeof dateString === "string" && dateString.includes(" ")) {
+        const [datePart, timePart] = dateString.split(" ");
+        const time = timePart ? timePart.slice(0, 5) : "";
+
+        return `${datePart} ${time} GMT+8`;
+    }
+
+    // Fallback for ISO date strings
     const date = new Date(dateString);
-    return date.toLocaleString();
+
+    return date.toLocaleString("en-US", {
+        timeZone: "Asia/Taipei",
+        year: "numeric",
+        month: "2-digit",
+        day: "2-digit",
+        hour: "2-digit",
+        minute: "2-digit",
+        hour12: false
+    }) + " GMT+8";
+}
+
+// Parse MySQL DATETIME as GMT+8 time
+function parseGMT8Date(dateString) {
+    if (!dateString) {
+        return null;
+    }
+
+    // If backend returns "2026-05-20 16:00:00",
+    // treat it as GMT+8 by adding "+08:00"
+    if (typeof dateString === "string" && dateString.includes(" ")) {
+        return new Date(dateString.replace(" ", "T") + "+08:00");
+    }
+
+    return new Date(dateString);
+}
+
+// Get current GMT+8 time
+function getNowGMT8() {
+    const now = new Date();
+    return new Date(now.toLocaleString("en-US", { timeZone: "Asia/Taipei" }));
 }
 
 // Convert due date into short reminder text
 function getDueText(dueDateString, notificationType) {
-    const now = new Date();
-    const dueDate = new Date(dueDateString);
+    const now = getNowGMT8();
+    const dueDate = parseGMT8Date(dueDateString);
 
     const differenceMs = dueDate - now;
     const differenceHours = Math.ceil(differenceMs / (1000 * 60 * 60));
@@ -397,20 +440,19 @@ function getDueText(dueDateString, notificationType) {
     return `Due ${differenceDays} Days`;
 }
 
-// Choose emoji for reminder status
 function getReminderEmoji(dueDateString, notificationType) {
-    const now = new Date();
-    const dueDate = new Date(dueDateString);
+    const now = getNowGMT8();
+    const dueDate = parseGMT8Date(dueDateString);
 
     const differenceMs = dueDate - now;
     const differenceHours = Math.ceil(differenceMs / (1000 * 60 * 60));
 
     if (notificationType === "Overdue" || differenceMs < 0) {
-        return "❗";
+        return "⚠️";
     }
 
     if (differenceHours <= 24) {
-        return "⚠️";
+        return "📅";
     }
 
     return "⏰";
@@ -420,13 +462,31 @@ function convertToMySQLDateTime(dateTimeLocalValue) {
     return dateTimeLocalValue.replace("T", " ") + ":00";
 }
 
+// Convert MySQL DATETIME to datetime-local input format
 function convertToDateTimeLocal(dateString) {
+    if (!dateString) {
+        return "";
+    }
+
+    // If backend returns "2026-05-20 16:00:00"
+    if (typeof dateString === "string" && dateString.includes(" ")) {
+        return dateString.replace(" ", "T").slice(0, 16);
+    }
+
+    // Fallback for ISO date strings
     const date = new Date(dateString);
 
-    const offset = date.getTimezoneOffset();
-    const localDate = new Date(date.getTime() - offset * 60 * 1000);
+    const taipeiDate = new Date(
+        date.toLocaleString("en-US", { timeZone: "Asia/Taipei" })
+    );
 
-    return localDate.toISOString().slice(0, 16);
+    const year = taipeiDate.getFullYear();
+    const month = String(taipeiDate.getMonth() + 1).padStart(2, "0");
+    const day = String(taipeiDate.getDate()).padStart(2, "0");
+    const hours = String(taipeiDate.getHours()).padStart(2, "0");
+    const minutes = String(taipeiDate.getMinutes()).padStart(2, "0");
+
+    return `${year}-${month}-${day}T${hours}:${minutes}`;
 }
 
 async function openEditModal(assignmentId) {
