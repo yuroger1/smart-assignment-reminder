@@ -37,7 +37,7 @@ Expected response:
 ## GitHub Repository
 
 ```text
-https://github.com/yuroger2/smart-assignment-reminder
+https://github.com/yuroger1/smart-assignment-reminder
 ```
 
 ---
