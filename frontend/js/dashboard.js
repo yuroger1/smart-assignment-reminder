@@ -367,32 +367,54 @@ document.getElementById("logoutBtn").addEventListener("click", async function ()
     }
 });
 
-// Format MySQL DATETIME string as GMT+8 display time
+// Format date as: YYYY-MM-DD HR:MIN AM/PM
 function formatDate(dateString) {
     if (!dateString) {
         return "";
     }
 
-    // If backend returns "2026-05-20 16:00:00"
-    if (typeof dateString === "string" && dateString.includes(" ")) {
-        const [datePart, timePart] = dateString.split(" ");
-        const time = timePart ? timePart.slice(0, 5) : "";
+    let datePart;
+    let hour;
+    let minute;
 
-        return `${datePart} ${time} GMT+8`;
+    // Case 1: MySQL DATETIME string, for example: "2026-05-19 03:00:00"
+    if (typeof dateString === "string" && dateString.includes(" ")) {
+        const parts = dateString.split(" ");
+        datePart = parts[0];
+
+        const timePart = parts[1];
+        const timeParts = timePart.split(":");
+
+        hour = parseInt(timeParts[0], 10);
+        minute = timeParts[1];
+    } 
+    // Case 2: ISO string, fallback
+    else {
+        const date = new Date(dateString);
+
+        const taipeiDate = new Date(
+            date.toLocaleString("en-US", { timeZone: "Asia/Taipei" })
+        );
+
+        const year = taipeiDate.getFullYear();
+        const month = String(taipeiDate.getMonth() + 1).padStart(2, "0");
+        const day = String(taipeiDate.getDate()).padStart(2, "0");
+
+        datePart = `${year}-${month}-${day}`;
+        hour = taipeiDate.getHours();
+        minute = String(taipeiDate.getMinutes()).padStart(2, "0");
     }
 
-    // Fallback for ISO date strings
-    const date = new Date(dateString);
+    const ampm = hour >= 12 ? "PM" : "AM";
+    let displayHour = hour % 12;
 
-    return date.toLocaleString("en-US", {
-        timeZone: "Asia/Taipei",
-        year: "numeric",
-        month: "2-digit",
-        day: "2-digit",
-        hour: "2-digit",
-        minute: "2-digit",
-        hour12: false
-    }) + " GMT+8";
+    if (displayHour === 0) {
+        displayHour = 12;
+    }
+
+    displayHour = String(displayHour).padStart(2, "0");
+
+    return `${datePart} ${displayHour}:${minute} ${ampm}`;
 }
 
 // Parse MySQL DATETIME as GMT+8 time
@@ -448,11 +470,11 @@ function getReminderEmoji(dueDateString, notificationType) {
     const differenceHours = Math.ceil(differenceMs / (1000 * 60 * 60));
 
     if (notificationType === "Overdue" || differenceMs < 0) {
-        return "⚠️";
+        return "❗";
     }
 
     if (differenceHours <= 24) {
-        return "📅";
+        return "⚠️";
     }
 
     return "⏰";
