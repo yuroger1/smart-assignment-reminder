@@ -2,25 +2,58 @@
 
 ## Project Description
 
-Smart Assignment Reminder is a dynamic web application designed to help university students manage assignments, courses, due dates, and reminders in one centralized dashboard.
+Smart Assignment Reminder is a dynamic full-stack web application designed to help university students manage assignments, courses, deadlines, and reminders in one centralized dashboard.
 
-Many students take multiple courses at the same time, and each course may have different homework, quizzes, reports, and project deadlines. This system helps students avoid missing important deadlines by allowing them to add assignments, organize them by course, track due dates, and view due-soon or overdue reminders.
+Students often take multiple courses at the same time, and each course may have different homework, reports, quizzes, lab tasks, and project deadlines. This system helps students organize academic tasks, track due dates, and avoid missing important assignments.
 
-This is not a static website. It is a full-stack, database-driven web application with authentication, CRUD operations, dynamic dashboard content, search/filter features, and reminder functionality.
+This project is not a static website. It includes user authentication, database integration, backend APIs, CRUD operations, search and filter features, and a reminder system.
+
+---
+
+## Deployment
+
+### Live Website
+
+```text
+https://smart-assignment-reminder-production.up.railway.app
+```
+
+### Test API
+
+```text
+https://smart-assignment-reminder-production.up.railway.app/api/test
+```
+
+Expected response:
+
+```json
+{
+  "message": "Backend is working!"
+}
+```
+
+---
+
+## GitHub Repository
+
+```text
+https://github.com/yuroger2/smart-assignment-reminder
+```
 
 ---
 
 ## Target Users
 
-The target users are university students who need to manage coursework across multiple courses.
+The target users are university students who need to manage coursework from multiple classes.
 
-Typical user problems include:
+Common problems this project solves:
 
 - Forgetting assignment deadlines
-- Managing tasks from several courses at the same time
-- Losing track of overdue assignments
-- Needing a centralized dashboard for academic tasks
-- Wanting a simple reminder system for upcoming deadlines
+- Managing assignments from several courses
+- Tracking overdue tasks
+- Organizing tasks by course
+- Viewing all academic tasks in one dashboard
+- Receiving reminders for upcoming or overdue assignments
 
 ---
 
@@ -28,21 +61,18 @@ Typical user problems include:
 
 ### 1. User Authentication
 
-Users can register, log in, and log out.
+Users can:
 
-Main functions:
-
-- Register a new account
+- Register an account
 - Log in with email and password
-- Store password securely using password hashing
-- Maintain login session
-- Prevent unauthorized users from accessing protected pages
+- Log out
+- Access protected pages only after login
+
+Passwords are hashed using `bcrypt`, and login sessions are managed using `express-session`.
 
 ---
 
 ### 2. Dashboard
-
-After logging in, users can access the dashboard.
 
 The dashboard displays:
 
@@ -53,26 +83,25 @@ The dashboard displays:
 - Reminder section
 - Assignment list
 - Search and filter tools
-- Quick action buttons for adding assignments and courses
+- Quick action buttons
+
+The dashboard dynamically loads data from the MySQL database through Express API routes.
 
 ---
 
 ### 3. Assignment Management
 
-Users can manage their assignments through full CRUD operations.
+Users can perform full CRUD operations for assignments.
 
-Assignment functions include:
+Assignment functions:
 
 - Add assignment
 - View assignment list
 - Edit assignment
 - Mark assignment as completed
 - Delete assignment
-- Assign course to assignment
-- Set due date
-- Set priority level
 
-Assignment fields include:
+Assignment fields:
 
 - Assignment title
 - Course
@@ -81,20 +110,22 @@ Assignment fields include:
 - Priority
 - Status
 
+The default assignment sorting is by due date, so the nearest deadlines appear first.
+
 ---
 
 ### 4. Course Management
 
-Users can manage their own course list.
+Users can manage their own courses.
 
-Course functions include:
+Course functions:
 
 - Add course
 - View course list
 - Edit course name
 - Delete course
 
-When a course is deleted, assignments using that course can remain in the system and become “No Course”.
+The course system does not require an instructor field. If a course is deleted, assignments connected to that course remain in the system and become “No Course”.
 
 ---
 
@@ -102,46 +133,70 @@ When a course is deleted, assignments using that course can remain in the system
 
 Users can search and filter assignments dynamically.
 
-Search and filter options include:
+Search and filter options:
 
 - Search by assignment title
 - Filter by course
 - Filter by status
 - Sort by due date
 
-The frontend sends query parameters to the backend, and the backend retrieves matching data from the MySQL database.
+The frontend sends query parameters to the backend, and the backend retrieves matching data from MySQL using parameterized SQL queries.
 
 ---
 
 ### 6. Reminder System
 
-The system includes an in-app reminder feature.
+The system includes an in-app reminder section.
 
 Reminder types:
 
-- Due Soon
 - Overdue
+- Due Today
+- Due Soon
 
-Reminder logic:
+The reminder section uses emojis instead of colored bars to avoid confusion with assignment priority colors.
 
-- If an assignment is due within the next few days, it appears as Due Soon.
-- If an assignment is past its due date and not completed, it appears as Overdue.
-- Completed assignments do not appear in the reminder section.
+Emoji meanings:
 
-The reminder section is dynamically generated from database data.
+| Emoji | Meaning |
+|:---|:---|
+| ❗ | Overdue |
+| ⚠️ | Due Today |
+| ⏰ | Due Soon |
+
+Completed assignments do not appear in the reminder section.
 
 ---
 
-### 7. Responsive Homepage
+### 7. GMT+8 Time Display
 
-The homepage uses a modern landing page design with:
+The system uses GMT+8 / Asia Taipei time for assignment deadlines and reminders.
 
-- Navigation bar
+Date and time are displayed in this format:
+
+```text
+YYYY-MM-DD HR:MIN AM/PM
+```
+
+Example:
+
+```text
+2026-05-19 03:00 AM
+```
+
+---
+
+### 8. Homepage Design
+
+The homepage includes:
+
+- Modern landing page layout
 - Background image
-- Main project title
+- Navigation bar
+- Project title
 - Short project description
 - Login and sign-up buttons
-- Key features card
+- Key features section
 
 ---
 
@@ -152,9 +207,9 @@ The homepage uses a modern landing page design with:
 | Frontend | HTML5, CSS3, JavaScript, Bootstrap |
 | Backend | Node.js, Express.js |
 | Database | MySQL |
-| Authentication | Express Session, bcrypt |
+| Authentication | bcrypt, express-session |
 | API Communication | Fetch API |
-| Deployment | Railway / Render / similar platform |
+| Deployment | Railway |
 | Version Control | Git, GitHub |
 
 ---
@@ -201,7 +256,8 @@ smart-assignment-reminder/
 │       └── logo.png
 │
 ├── database/
-│   └── schema.sql
+│   ├── schema.sql
+│   └── schema_railway.sql
 │
 ├── screenshots/
 │   ├── homepage.png
@@ -219,29 +275,23 @@ smart-assignment-reminder/
 
 ## Database Design
 
-The system uses a MySQL database named:
+The project uses a MySQL database.
 
-```sql
-smart_assignment_reminder
-```
-
-### Main Tables
+Main database tables:
 
 | Table | Purpose |
 |:---|:---|
 | users | Stores registered user accounts |
 | courses | Stores user-created courses |
 | assignments | Stores assignment details and deadlines |
-| notifications | Optional table for storing reminder messages |
+| notifications | Stores optional reminder data |
+| assignment_overview | Optional view for assignment display |
 
 ---
 
-## Database Schema Example
+## Database Schema
 
 ```sql
-CREATE DATABASE IF NOT EXISTS smart_assignment_reminder;
-USE smart_assignment_reminder;
-
 CREATE TABLE users (
     user_id INT AUTO_INCREMENT PRIMARY KEY,
     name VARCHAR(100) NOT NULL,
@@ -325,9 +375,9 @@ CREATE TABLE notifications (
 
 | Method | Endpoint | Description |
 |:---|:---|:---|
-| GET | `/api/assignments` | Get all assignments for current user |
+| GET | `/api/assignments` | Get all assignments |
 | GET | `/api/assignments/:id` | Get one assignment |
-| POST | `/api/assignments` | Add new assignment |
+| POST | `/api/assignments` | Add assignment |
 | PUT | `/api/assignments/:id` | Edit assignment |
 | PATCH | `/api/assignments/:id/complete` | Mark assignment as completed |
 | DELETE | `/api/assignments/:id` | Delete assignment |
@@ -338,9 +388,9 @@ CREATE TABLE notifications (
 
 | Method | Endpoint | Description |
 |:---|:---|:---|
-| GET | `/api/courses` | Get all courses for current user |
-| POST | `/api/courses` | Add new course |
-| PUT | `/api/courses/:id` | Edit course name |
+| GET | `/api/courses` | Get all courses |
+| POST | `/api/courses` | Add course |
+| PUT | `/api/courses/:id` | Edit course |
 | DELETE | `/api/courses/:id` | Delete course |
 
 ---
@@ -349,24 +399,26 @@ CREATE TABLE notifications (
 
 | Method | Endpoint | Description |
 |:---|:---|:---|
-| GET | `/api/notifications` | Get due soon and overdue assignments |
+| GET | `/api/notifications` | Get due soon and overdue reminders |
 
 ---
 
 ## Dynamic Features
 
-This project includes the following dynamic web application features:
+This project includes:
 
 - User registration and login
-- User session authentication
-- Dashboard with real-time database content
-- Assignment CRUD operations
-- Course CRUD operations
-- Search and filter system
-- In-app reminder system
-- Dynamic due soon / overdue classification
-- Frontend and backend communication through Fetch API
+- Session-based authentication
+- Dynamic dashboard
+- Assignment CRUD
+- Course CRUD
+- Search and filter
+- Reminder system
+- Due soon and overdue classification
+- GMT+8 deadline display
+- Frontend and backend communication
 - MySQL database integration
+- Online deployment
 
 ---
 
@@ -374,14 +426,14 @@ This project includes the following dynamic web application features:
 
 ### 1. Prerequisites
 
-Make sure the following tools are installed:
+Install:
 
 - Node.js
 - npm
 - MySQL
 - Git
 
-Check Node.js and npm:
+Check versions:
 
 ```bash
 node -v
@@ -393,7 +445,7 @@ npm -v
 ### 2. Clone the Repository
 
 ```bash
-git clone https://github.com/yuroger1/smart-assignment-reminder.git
+git clone https://github.com/yuroger2/smart-assignment-reminder.git
 cd smart-assignment-reminder
 ```
 
@@ -406,7 +458,7 @@ cd backend
 npm install
 ```
 
-If using Windows PowerShell and `npm` is blocked, use:
+For Windows PowerShell:
 
 ```bash
 npm.cmd install
@@ -422,7 +474,7 @@ Open MySQL Workbench or MySQL command line and run:
 CREATE DATABASE smart_assignment_reminder;
 ```
 
-Then import the SQL file:
+Then import:
 
 ```text
 database/schema.sql
@@ -441,19 +493,8 @@ DB_USER=root
 DB_PASSWORD=your_mysql_password
 DB_NAME=smart_assignment_reminder
 PORT=3000
-SESSION_SECRET=your_session_secret
-```
-
-Example:
-
-```env
-DB_HOST=localhost
-DB_PORT=3306
-DB_USER=root
-DB_PASSWORD=123456
-DB_NAME=smart_assignment_reminder
-PORT=3000
 SESSION_SECRET=smart_assignment_secret
+TZ=Asia/Taipei
 ```
 
 Do not upload `.env` to GitHub.
@@ -468,13 +509,13 @@ Inside the `backend/` folder:
 npm run dev
 ```
 
-If using Windows PowerShell:
+For Windows PowerShell:
 
 ```bash
 npm.cmd run dev
 ```
 
-If successful, the terminal should show:
+If successful:
 
 ```text
 Server is running on http://localhost:3000
@@ -483,8 +524,6 @@ Server is running on http://localhost:3000
 ---
 
 ### 7. Open the Website
-
-Open the browser and go to:
 
 ```text
 http://localhost:3000/index.html
@@ -496,33 +535,27 @@ http://localhost:3000/index.html
 
 ### 1. Register
 
-Go to the sign-up page and create a new account.
+Create a new user account.
 
 ### 2. Login
 
-Log in with the registered email and password.
+Log in using email and password.
 
 ### 3. Add Courses
 
-Go to the Add Course page and create course names.
+Go to the Add Course page and create courses.
 
 ### 4. Add Assignments
 
-Go to the Add Assignment page and create assignments with:
-
-- Title
-- Course
-- Description
-- Due date
-- Priority
+Go to the Add Assignment page and create assignments.
 
 ### 5. Use Dashboard
 
 The dashboard allows users to:
 
 - View all assignments
-- See due soon assignments
-- See overdue assignments
+- See due soon reminders
+- See overdue reminders
 - Mark assignments as completed
 - Edit assignments
 - Delete assignments
@@ -530,89 +563,56 @@ The dashboard allows users to:
 
 ---
 
-## Deployment
+## Railway Deployment Setup
 
-The project is intended to be deployed online.
-
-Recommended deployment platform:
-
-```text
-Railway
-```
-
-Other possible platforms:
-
-```text
-Render
-Vercel
-Netlify
-Firebase Hosting
-```
-
-Since this is a full-stack project with backend and MySQL database, Railway or Render is recommended.
-
----
-
-## Deployment URL
-
-```text
-https://deployment.com
-```
-
-Replace this with the final deployed project link.
-
----
-
-## GitHub Repository
-
-```text
-https://github.com/yuroger1/smart-assignment-reminder 
-```
-
-Replace this with the final GitHub repository link.
-
----
-
-## Environment Variables for Deployment
-
-Example deployment environment variables:
+### Required Railway Web Service Variables
 
 ```env
 NODE_ENV=production
-SESSION_SECRET=your_production_secret
-DB_HOST=your_cloud_mysql_host
-DB_PORT=3306
-DB_USER=your_cloud_mysql_user
-DB_PASSWORD=your_cloud_mysql_password
-DB_NAME=your_cloud_mysql_database
+TZ=Asia/Taipei
+SESSION_SECRET=smart_assignment_reminder_secret_2026
+
+DB_HOST=${{MySQL.MYSQLHOST}}
+DB_PORT=${{MySQL.MYSQLPORT}}
+DB_USER=${{MySQL.MYSQLUSER}}
+DB_PASSWORD=${{MySQL.MYSQLPASSWORD}}
+DB_NAME=smart_assignment_reminder
 ```
 
 ---
 
-## Screenshots
+### Railway Build Command
 
-### Homepage
-
-```text
-screenshots/homepage.png
+```bash
+npm install --prefix backend
 ```
 
-### Dashboard
+---
 
-```text
-screenshots/dashboard.png
+### Railway Start Command
+
+```bash
+npm start --prefix backend
 ```
 
-### Add Assignment Page
+---
 
-```text
-screenshots/add-assignment.png
-```
+### Root `package.json`
 
-### Add Course Page
-
-```text
-screenshots/add-course.png
+```json
+{
+  "name": "smart-assignment-reminder",
+  "version": "1.0.0",
+  "description": "A dynamic web application for students to manage assignments and deadlines.",
+  "scripts": {
+    "build": "npm install --prefix backend",
+    "start": "npm start --prefix backend",
+    "dev": "npm run dev --prefix backend"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}
 ```
 
 ---
@@ -622,25 +622,32 @@ screenshots/add-course.png
 This project includes basic security practices:
 
 - Passwords are hashed using bcrypt
-- User sessions are handled using express-session
+- Sessions are managed using express-session
 - Protected routes require login
-- SQL queries use parameterized queries to reduce SQL injection risk
-- Users can only access their own assignments and courses
+- SQL queries use parameterized queries
+- Users can only access their own courses and assignments
+- `.env` files are excluded from GitHub
+
+---
+
+## Known Notes
+
+The project currently uses the default `MemoryStore` from `express-session`. This is acceptable for a course project demo. In a real production system, this should be replaced with a persistent session store such as Redis or MySQL session storage.
 
 ---
 
 ## Future Improvements
 
-Possible future improvements include:
+Possible future improvements:
 
 - Email reminder notifications
 - Google Calendar synchronization
-- File upload for assignment instructions
-- Reminder settings page
 - Push notifications
+- Reminder settings page
+- File upload for assignment instructions
 - Dark mode
-- Data visualization charts
-- Mobile app version
+- Mobile layout improvements
+- Assignment charts and statistics
 - More advanced priority system
 
 ---
@@ -648,7 +655,7 @@ Possible future improvements include:
 ## Team Members
 
 | Name | Student ID |
-|:---|:---|
+| :---| :---|
 | Jacky | D1365097 |
 | Roger | D1365109 |
 
@@ -660,6 +667,7 @@ Current version includes:
 
 - Functional frontend
 - Functional backend
+- Railway deployment
 - MySQL database integration
 - User authentication
 - Assignment CRUD
@@ -667,6 +675,6 @@ Current version includes:
 - Search and filter
 - In-app reminder system
 - Dynamic dashboard
-- Homepage UI
+- Modern homepage UI
 
 This project is a real functional web application, not a static website.
