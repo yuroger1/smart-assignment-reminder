@@ -37,7 +37,7 @@ Expected response:
 ## GitHub Repository
 
 ```text
-https://github.com/yuroger2/smart-assignment-reminder
+https://github.com/yuroger1/smart-assignment-reminder
 ```
 
 ---
@@ -445,7 +445,7 @@ npm -v
 ### 2. Clone the Repository
 
 ```bash
-git clone https://github.com/yuroger2/smart-assignment-reminder.git
+git clone https://github.com/yuroger1/smart-assignment-reminder.git
 cd smart-assignment-reminder
 ```
 
