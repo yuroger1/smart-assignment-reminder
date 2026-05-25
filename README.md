@@ -65,10 +65,12 @@ Users can:
 
 - Register an account
 - Log in with email and password
+- Continue with a linked Google account
+- Request a forgot-password reset link
 - Log out
 - Access protected pages only after login
 
-Passwords are hashed using `bcrypt`, and login sessions are managed using `express-session`.
+Passwords are hashed using `bcrypt`, Google credentials are verified before linking accounts, password reset tokens are stored as hashes, and login sessions are managed using `express-session`.
 
 ---
 
@@ -207,7 +209,7 @@ The homepage includes:
 | Frontend | HTML5, CSS3, JavaScript, Bootstrap |
 | Backend | Node.js, Express.js |
 | Database | MySQL |
-| Authentication | bcrypt, express-session |
+| Authentication | bcrypt, express-session, Google Identity Services |
 | API Communication | Fetch API |
 | Deployment | Railway |
 | Version Control | Git, GitHub |
@@ -296,7 +298,9 @@ CREATE TABLE users (
     user_id INT AUTO_INCREMENT PRIMARY KEY,
     name VARCHAR(100) NOT NULL,
     email VARCHAR(150) NOT NULL UNIQUE,
-    password_hash VARCHAR(255) NOT NULL,
+    password_hash VARCHAR(255),
+    google_id VARCHAR(255) UNIQUE,
+    auth_provider ENUM('local', 'google', 'local_google') NOT NULL DEFAULT 'local',
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
@@ -354,6 +358,20 @@ CREATE TABLE notifications (
         REFERENCES assignments(assignment_id)
         ON DELETE CASCADE
 );
+
+CREATE TABLE password_reset_tokens (
+    token_id INT AUTO_INCREMENT PRIMARY KEY,
+    user_id INT NOT NULL,
+    token_hash CHAR(64) NOT NULL UNIQUE,
+    expires_at DATETIME NOT NULL,
+    used_at DATETIME NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT fk_password_reset_tokens_user
+        FOREIGN KEY (user_id)
+        REFERENCES users(user_id)
+        ON DELETE CASCADE
+);
 ```
 
 ---
@@ -366,6 +384,11 @@ CREATE TABLE notifications (
 |:---|:---|:---|
 | POST | `/api/auth/register` | Register a new user |
 | POST | `/api/auth/login` | Log in user |
+| GET | `/api/auth/google/config` | Get Google sign-in configuration |
+| POST | `/api/auth/google` | Log in or register with Google |
+| POST | `/api/auth/google/link` | Link Google to the current account |
+| POST | `/api/auth/forgot-password` | Request a password reset link |
+| POST | `/api/auth/reset-password` | Reset password with a token |
 | POST | `/api/auth/logout` | Log out user |
 | GET | `/api/auth/me` | Get current logged-in user |
 
@@ -495,6 +518,8 @@ DB_NAME=smart_assignment_reminder
 PORT=3000
 SESSION_SECRET=smart_assignment_secret
 TZ=Asia/Taipei
+APP_BASE_URL=http://localhost:3000
+GOOGLE_CLIENT_ID=your_google_oauth_client_id.apps.googleusercontent.com
 ```
 
 Do not upload `.env` to GitHub.
@@ -577,6 +602,8 @@ DB_PORT=${{MySQL.MYSQLPORT}}
 DB_USER=${{MySQL.MYSQLUSER}}
 DB_PASSWORD=${{MySQL.MYSQLPASSWORD}}
 DB_NAME=smart_assignment_reminder
+APP_BASE_URL=https://smart-assignment-reminder-production.up.railway.app
+GOOGLE_CLIENT_ID=your_google_oauth_client_id.apps.googleusercontent.com
 ```
 
 ---
@@ -622,6 +649,8 @@ npm start --prefix backend
 This project includes basic security practices:
 
 - Passwords are hashed using bcrypt
+- Password reset tokens are hashed and expire after 30 minutes
+- Google sign-in is enabled only when `GOOGLE_CLIENT_ID` is configured
 - Sessions are managed using express-session
 - Protected routes require login
 - SQL queries use parameterized queries

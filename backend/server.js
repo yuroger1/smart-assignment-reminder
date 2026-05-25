@@ -8,6 +8,7 @@ const authRoutes = require("./routes/authRoutes");
 const assignmentRoutes = require("./routes/assignmentRoutes");
 const courseRoutes = require("./routes/courseRoutes");
 const notificationRoutes = require("./routes/notificationRoutes");
+const ensureAuthSchema = require("./migrations/authSchema");
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -48,6 +49,13 @@ app.get("/api/test", (req, res) => {
 });
 
 // Start server
-app.listen(PORT, () => {
-    console.log(`Server is running on http://localhost:${PORT}`);
-});
+ensureAuthSchema()
+    .then(() => {
+        app.listen(PORT, () => {
+            console.log(`Server is running on http://localhost:${PORT}`);
+        });
+    })
+    .catch((error) => {
+        console.error("Failed to prepare authentication schema:", error);
+        process.exit(1);
+    });

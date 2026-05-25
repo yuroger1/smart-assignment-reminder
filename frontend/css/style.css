@@ -17,6 +17,49 @@ body {
     border-radius: 12px;
 }
 
+.auth-page {
+    padding-top: 48px;
+    padding-bottom: 48px;
+}
+
+.auth-card {
+    border: 0;
+    border-radius: 8px;
+}
+
+.auth-helper-row {
+    display: flex;
+    justify-content: flex-end;
+    font-size: 0.95rem;
+}
+
+.auth-divider {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin: 22px 0;
+    color: #6c757d;
+    font-size: 0.9rem;
+}
+
+.auth-divider::before,
+.auth-divider::after {
+    content: "";
+    flex: 1;
+    height: 1px;
+    background: #dee2e6;
+}
+
+.google-auth-slot {
+    display: flex;
+    justify-content: center;
+    min-height: 44px;
+}
+
+.google-auth-slot > div {
+    max-width: 100%;
+}
+
 .assignment-card {
     border-left: 5px solid #6c757d;
 }
