@@ -4,7 +4,12 @@ document.addEventListener("DOMContentLoaded", async function () {
     await loadCourses();
     loadAssignments();
     loadNotifications();
+    loadCalendarIntegration();
 });
+
+let calendarConfig = null;
+let calendarTokenClient = null;
+let calendarAccessToken = null;
 
 // Check whether user is logged in
 async function checkLogin() {
@@ -353,6 +358,14 @@ document.getElementById("searchInput").addEventListener("input", function () {
     loadAssignments();
 });
 
+const calendarSyncBtn = document.getElementById("calendarSyncBtn");
+
+if (calendarSyncBtn) {
+    calendarSyncBtn.addEventListener("click", function () {
+        handleCalendarSync();
+    });
+}
+
 // Logout
 document.getElementById("logoutBtn").addEventListener("click", async function () {
     const response = await fetch("/api/auth/logout", {
@@ -478,6 +491,220 @@ function getReminderEmoji(dueDateString, notificationType) {
     }
 
     return "⏰";
+}
+
+async function loadCalendarIntegration() {
+    const calendarPanel = document.getElementById("calendarPanel");
+    const syncButton = document.getElementById("calendarSyncBtn");
+
+    if (!calendarPanel || !syncButton) {
+        return;
+    }
+
+    try {
+        const configResponse = await fetch("/api/calendar/config", {
+            method: "GET",
+            credentials: "include"
+        });
+
+        calendarConfig = await configResponse.json();
+
+        if (!calendarConfig.success || !calendarConfig.enabled) {
+            setCalendarStatus("Google Calendar is unavailable.");
+            setCalendarMessage("secondary", "Set GOOGLE_CLIENT_ID to enable calendar sync.");
+            syncButton.disabled = true;
+            return;
+        }
+
+        const status = await fetchCalendarStatus();
+        renderCalendarStatus(status);
+        syncButton.disabled = false;
+    } catch (error) {
+        console.error("Calendar setup error:", error);
+        setCalendarStatus("Calendar status could not be loaded.");
+        syncButton.disabled = true;
+    }
+}
+
+async function fetchCalendarStatus() {
+    const response = await fetch("/api/calendar/status", {
+        method: "GET",
+        credentials: "include"
+    });
+
+    return response.json();
+}
+
+function renderCalendarStatus(status) {
+    if (!status.success) {
+        setCalendarStatus(status.message || "Calendar status could not be loaded.");
+        return;
+    }
+
+    let text = `${status.syncedCount} of ${status.pendingCount} pending assignments synced.`;
+
+    if (status.lastSyncedAt) {
+        text += ` Last sync: ${formatDate(status.lastSyncedAt)}.`;
+    }
+
+    setCalendarStatus(text);
+}
+
+function setCalendarStatus(message) {
+    const statusElement = document.getElementById("calendarStatus");
+
+    if (statusElement) {
+        statusElement.textContent = message;
+    }
+}
+
+function setCalendarMessage(type, message) {
+    const messageBox = document.getElementById("calendarMessage");
+
+    if (!messageBox) {
+        return;
+    }
+
+    messageBox.innerHTML = "";
+
+    if (!message) {
+        return;
+    }
+
+    const alert = document.createElement("div");
+    alert.className = `alert alert-${type} mb-0`;
+    alert.textContent = message;
+    messageBox.appendChild(alert);
+}
+
+function setCalendarLoading(isLoading) {
+    const syncButton = document.getElementById("calendarSyncBtn");
+
+    if (!syncButton) {
+        return;
+    }
+
+    if (isLoading) {
+        syncButton.dataset.originalText = syncButton.textContent;
+        syncButton.textContent = "Syncing...";
+        syncButton.disabled = true;
+    } else {
+        syncButton.textContent = syncButton.dataset.originalText || "Sync Calendar";
+        syncButton.disabled = !calendarConfig?.enabled;
+    }
+}
+
+function waitForGoogleOAuth() {
+    return new Promise(function (resolve, reject) {
+        let attempts = 0;
+
+        const timer = setInterval(function () {
+            attempts += 1;
+
+            if (window.google && window.google.accounts && window.google.accounts.oauth2) {
+                clearInterval(timer);
+                resolve();
+                return;
+            }
+
+            if (attempts >= 30) {
+                clearInterval(timer);
+                reject(new Error("Google authorization did not load."));
+            }
+        }, 200);
+    });
+}
+
+async function ensureCalendarTokenClient() {
+    if (calendarTokenClient) {
+        return calendarTokenClient;
+    }
+
+    if (!calendarConfig?.enabled) {
+        throw new Error("Google Calendar is not configured.");
+    }
+
+    await waitForGoogleOAuth();
+
+    calendarTokenClient = google.accounts.oauth2.initTokenClient({
+        client_id: calendarConfig.clientId,
+        scope: calendarConfig.scope,
+        include_granted_scopes: true,
+        callback: async function (tokenResponse) {
+            if (tokenResponse.error) {
+                setCalendarMessage("danger", "Google Calendar permission was not granted.");
+                setCalendarLoading(false);
+                return;
+            }
+
+            calendarAccessToken = tokenResponse.access_token;
+            await syncAssignmentsToCalendar();
+        }
+    });
+
+    return calendarTokenClient;
+}
+
+async function handleCalendarSync() {
+    setCalendarMessage("", "");
+
+    try {
+        const tokenClient = await ensureCalendarTokenClient();
+
+        if (!calendarAccessToken) {
+            setCalendarLoading(true);
+            tokenClient.requestAccessToken({ prompt: "consent" });
+            return;
+        }
+
+        await syncAssignmentsToCalendar();
+    } catch (error) {
+        console.error("Calendar authorization error:", error);
+        setCalendarMessage("danger", error.message || "Google Calendar could not be opened.");
+        setCalendarLoading(false);
+    }
+}
+
+async function syncAssignmentsToCalendar() {
+    if (!calendarAccessToken) {
+        setCalendarMessage("danger", "Google Calendar permission is required.");
+        setCalendarLoading(false);
+        return;
+    }
+
+    setCalendarLoading(true);
+    setCalendarStatus("Syncing pending assignments...");
+
+    try {
+        const response = await fetch("/api/calendar/sync", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            credentials: "include",
+            body: JSON.stringify({
+                accessToken: calendarAccessToken
+            })
+        });
+
+        const data = await response.json();
+
+        if (data.success) {
+            setCalendarMessage("success", `Synced ${data.total} assignments. Created ${data.created}, updated ${data.updated}.`);
+        } else {
+            setCalendarMessage("warning", `${data.message} Synced ${data.created + data.updated} of ${data.total}.`);
+        }
+
+        const status = await fetchCalendarStatus();
+        renderCalendarStatus(status);
+    } catch (error) {
+        console.error("Calendar sync error:", error);
+        calendarAccessToken = null;
+        setCalendarStatus("Calendar sync failed.");
+        setCalendarMessage("danger", "Google Calendar sync failed. Please try again.");
+    } finally {
+        setCalendarLoading(false);
+    }
 }
 
 function convertToMySQLDateTime(dateTimeLocalValue) {

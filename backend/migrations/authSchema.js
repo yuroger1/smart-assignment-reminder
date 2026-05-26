@@ -64,6 +64,24 @@ async function ensureAuthSchema() {
                 ON DELETE CASCADE
         )`
     );
+
+    if (!(await columnExists("assignments", "google_calendar_event_id"))) {
+        await pool.execute(
+            "ALTER TABLE assignments ADD COLUMN google_calendar_event_id VARCHAR(255) NULL AFTER status"
+        );
+    }
+
+    if (!(await columnExists("assignments", "google_calendar_event_link"))) {
+        await pool.execute(
+            "ALTER TABLE assignments ADD COLUMN google_calendar_event_link VARCHAR(500) NULL AFTER google_calendar_event_id"
+        );
+    }
+
+    if (!(await columnExists("assignments", "calendar_synced_at"))) {
+        await pool.execute(
+            "ALTER TABLE assignments ADD COLUMN calendar_synced_at DATETIME NULL AFTER google_calendar_event_link"
+        );
+    }
 }
 
 module.exports = ensureAuthSchema;

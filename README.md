@@ -170,7 +170,22 @@ Completed assignments do not appear in the reminder section.
 
 ---
 
-### 7. GMT+8 Time Display
+### 7. Google Calendar Sync
+
+Users can sync pending assignments to Google Calendar.
+
+Calendar sync:
+
+- Requests Google Calendar permission from the browser
+- Creates calendar events for pending assignment due dates
+- Updates existing calendar events on later syncs
+- Adds popup reminders based on assignment priority
+
+The backend stores Google Calendar event IDs on assignments, but it does not store the user's Calendar access token.
+
+---
+
+### 8. GMT+8 Time Display
 
 The system uses GMT+8 / Asia Taipei time for assignment deadlines and reminders.
 
@@ -188,7 +203,7 @@ Example:
 
 ---
 
-### 8. Homepage Design
+### 9. Homepage Design
 
 The homepage includes:
 
@@ -426,6 +441,16 @@ CREATE TABLE password_reset_tokens (
 
 ---
 
+### Google Calendar APIs
+
+| Method | Endpoint | Description |
+|:---|:---|:---|
+| GET | `/api/calendar/config` | Get Calendar client configuration |
+| GET | `/api/calendar/status` | Get pending and synced assignment counts |
+| POST | `/api/calendar/sync` | Sync pending assignments to Google Calendar |
+
+---
+
 ## Dynamic Features
 
 This project includes:
@@ -437,6 +462,7 @@ This project includes:
 - Course CRUD
 - Search and filter
 - Reminder system
+- Google Calendar event sync
 - Due soon and overdue classification
 - GMT+8 deadline display
 - Frontend and backend communication
@@ -523,6 +549,8 @@ GOOGLE_CLIENT_ID=your_google_oauth_client_id.apps.googleusercontent.com
 ```
 
 Do not upload `.env` to GitHub.
+
+For Google sign-in and Calendar sync, enable the Google Calendar API in Google Cloud and add `http://localhost:3000` to the OAuth client's authorized JavaScript origins.
 
 ---
 
@@ -651,6 +679,7 @@ This project includes basic security practices:
 - Passwords are hashed using bcrypt
 - Password reset tokens are hashed and expire after 30 minutes
 - Google sign-in is enabled only when `GOOGLE_CLIENT_ID` is configured
+- Calendar access tokens are requested by the browser and used only for the sync request
 - Sessions are managed using express-session
 - Protected routes require login
 - SQL queries use parameterized queries
@@ -670,7 +699,7 @@ The project currently uses the default `MemoryStore` from `express-session`. Thi
 Possible future improvements:
 
 - Email reminder notifications
-- Google Calendar synchronization
+- Automatic background calendar refresh
 - Push notifications
 - Reminder settings page
 - File upload for assignment instructions

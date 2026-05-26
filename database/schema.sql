@@ -40,6 +40,9 @@ CREATE TABLE assignments (
     due_date DATETIME NOT NULL,
     priority ENUM('Low', 'Medium', 'High') DEFAULT 'Medium',
     status ENUM('Pending', 'Completed') DEFAULT 'Pending',
+    google_calendar_event_id VARCHAR(255),
+    google_calendar_event_link VARCHAR(500),
+    calendar_synced_at DATETIME,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
 

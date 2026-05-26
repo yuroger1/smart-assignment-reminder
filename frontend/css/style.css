@@ -216,6 +216,33 @@ body {
     line-height: 1.2;
 }
 
+.calendar-panel {
+    border: 1px solid #cfe2ff;
+    background-color: #f8fbff;
+    border-radius: 8px;
+    padding: 18px;
+    box-shadow: 0 2px 6px rgba(13, 110, 253, 0.08);
+}
+
+.calendar-panel-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+}
+
+.calendar-title {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: #0b3d75;
+    margin-bottom: 4px;
+}
+
+.calendar-status {
+    color: #495057;
+    font-size: 0.95rem;
+}
+
 /* Navbar Brand Logo */
 .brand-wrapper {
     display: flex;
@@ -433,5 +460,14 @@ body {
         margin-top: 12px;
         justify-content: flex-start;
         flex-wrap: wrap;
+    }
+
+    .calendar-panel-header {
+        align-items: stretch;
+        flex-direction: column;
+    }
+
+    .calendar-panel-header .btn {
+        width: 100%;
     }
 }
