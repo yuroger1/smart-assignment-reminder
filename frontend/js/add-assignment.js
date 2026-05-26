@@ -251,8 +251,8 @@ function parseAssignmentText(text) {
             || moodleAssignment.title
             || inferTitle(lines),
         course: extractLabeledValue(lines, ["course", "class", "subject"]),
-        description: extractDescription(lines, fullText) || moodleAssignment.description,
-        dueDate: extractDueDate(fullText) || moodleAssignment.dueDate,
+        description: moodleAssignment.description || extractDescription(lines, fullText),
+        dueDate: moodleAssignment.dueDate || extractDueDate(fullText),
         priority: extractPriority(fullText)
     };
 }
