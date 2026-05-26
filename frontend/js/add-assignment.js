@@ -244,14 +244,85 @@ function parseAssignmentText(text) {
         .filter(Boolean);
 
     const fullText = lines.join("\n");
+    const moodleAssignment = parseMoodleAssignment(lines);
 
     return {
-        title: extractLabeledValue(lines, ["assignment", "assignment title", "title", "task", "homework"]) || inferTitle(lines),
+        title: extractLabeledValue(lines, ["assignment", "assignment title", "title", "task", "homework"])
+            || moodleAssignment.title
+            || inferTitle(lines),
         course: extractLabeledValue(lines, ["course", "class", "subject"]),
-        description: extractDescription(lines, fullText),
-        dueDate: extractDueDate(fullText),
+        description: extractDescription(lines, fullText) || moodleAssignment.description,
+        dueDate: extractDueDate(fullText) || moodleAssignment.dueDate,
         priority: extractPriority(fullText)
     };
+}
+
+function parseMoodleAssignment(lines) {
+    const dueIndex = lines.findIndex(function (line) {
+        return /^due\s*:/i.test(line);
+    });
+
+    if (dueIndex === -1) {
+        return {
+            title: "",
+            description: "",
+            dueDate: ""
+        };
+    }
+
+    return {
+        title: inferMoodleTitle(lines, dueIndex),
+        description: inferMoodleDescription(lines, dueIndex),
+        dueDate: parseMoodleDueDate(lines[dueIndex])
+    };
+}
+
+function inferMoodleTitle(lines, dueIndex) {
+    const titleParts = [];
+
+    for (let index = 0; index < dueIndex; index += 1) {
+        const line = lines[index];
+
+        if (isMoodleMetaLine(line) || isLikelyBreadcrumbLine(line)) {
+            if (titleParts.length > 0) {
+                break;
+            }
+
+            continue;
+        }
+
+        titleParts.push(line);
+
+        if (titleParts.join(" ").length > 80) {
+            break;
+        }
+    }
+
+    return cleanFieldValue(titleParts.join(" "));
+}
+
+function inferMoodleDescription(lines, dueIndex) {
+    for (let index = dueIndex + 1; index < lines.length; index += 1) {
+        const line = lines[index];
+
+        if (isMoodleMetaLine(line) || isLikelyAttachmentLine(line)) {
+            continue;
+        }
+
+        return cleanFieldValue(line);
+    }
+
+    return "";
+}
+
+function parseMoodleDueDate(line) {
+    const match = line.match(/^due\s*:\s*(.+)$/i);
+
+    if (!match) {
+        return "";
+    }
+
+    return parseAbsoluteDate(match[1]);
 }
 
 function extractLabeledValue(lines, labels) {
@@ -270,9 +341,12 @@ function extractLabeledValue(lines, labels) {
 }
 
 function inferTitle(lines) {
-    const skipped = /^(course|class|subject|due|deadline|priority|description|instructions?)\b/i;
+    const skipped = /^(course|class|subject|due|opened|deadline|priority|description|instructions?|mark as done)\b/i;
     const titleLine = lines.find(function (line) {
-        return line.length >= 4 && !skipped.test(line);
+        return line.length >= 4
+            && !skipped.test(line)
+            && !isLikelyBreadcrumbLine(line)
+            && !isLikelyAttachmentLine(line);
     });
 
     return titleLine ? cleanFieldValue(titleLine) : "";
@@ -280,13 +354,26 @@ function inferTitle(lines) {
 
 function extractDescription(lines, fullText) {
     const labeled = extractLabeledValue(lines, ["description", "details", "instructions", "notes"]);
+    const dueIndex = lines.findIndex(function (line) {
+        return /^due\s*:/i.test(line);
+    });
 
     if (labeled) {
         return labeled;
     }
 
+    if (dueIndex !== -1) {
+        const moodleDescription = inferMoodleDescription(lines, dueIndex);
+
+        if (moodleDescription) {
+            return moodleDescription;
+        }
+    }
+
     const descriptionLines = lines.filter(function (line) {
-        return !/^(course|class|subject|assignment|assignment title|title|task|homework|due|deadline|priority)\b/i.test(line);
+        return !/^(course|class|subject|assignment|assignment title|title|task|homework|opened|due|deadline|priority|mark as done)\b/i.test(line)
+            && !isLikelyBreadcrumbLine(line)
+            && !isLikelyAttachmentLine(line);
     });
 
     return descriptionLines.slice(1, 5).join("\n") || fullText.slice(0, 400);
@@ -324,6 +411,8 @@ function normalizePriority(value) {
 
 function extractDueDate(text) {
     const candidates = [
+        /\b(?:due date|due|deadline|submission deadline|submit by)\s*[:\-]?\s*((?:Monday|Tuesday|Wednesday|Thursday|Friday|Saturday|Sunday),?\s+\d{1,2}\s+[A-Za-z]+,?\s+\d{4},?\s+\d{1,2}(?::\d{2})?\s*(?:AM|PM))/i,
+        /\b(?:due date|due|deadline|submission deadline|submit by)\s*[:\-]?\s*(\d{1,2}\s+[A-Za-z]+,?\s+\d{4},?\s+\d{1,2}(?::\d{2})?\s*(?:AM|PM))/i,
         /\b(?:due date|due|deadline|submission deadline|submit by)\s*[:\-]?\s*([A-Za-z]+\s+\d{1,2},?\s+\d{4}(?:\s+(?:at\s+)?\d{1,2}(?::\d{2})?\s*(?:AM|PM)?)?)/i,
         /\b(?:due date|due|deadline|submission deadline|submit by)\s*[:\-]?\s*(\d{4}[\/\-]\d{1,2}[\/\-]\d{1,2}(?:\s+\d{1,2}:\d{2}(?::\d{2})?)?)/i,
         /\b(?:due date|due|deadline|submission deadline|submit by)\s*[:\-]?\s*(\d{1,2}[\/\-]\d{1,2}[\/\-]\d{2,4}(?:\s+\d{1,2}:\d{2}\s*(?:AM|PM)?)?)/i,
@@ -373,10 +462,14 @@ function parseRelativeDate(dayWord, timeText) {
 function parseAbsoluteDate(value) {
     const normalizedValue = value
         .replace(/\bat\b/gi, " ")
+        .replace(/^(Monday|Tuesday|Wednesday|Thursday|Friday|Saturday|Sunday),?\s+/i, "")
+        .replace(/,/g, " ")
         .replace(/\s+/g, " ")
         .trim();
 
-    let date = parseNumericDate(normalizedValue) || new Date(normalizedValue);
+    let date = parseNumericDate(normalizedValue)
+        || parseDayMonthDate(normalizedValue)
+        || new Date(normalizedValue);
 
     if (Number.isNaN(date.getTime())) {
         return "";
@@ -387,6 +480,50 @@ function parseAbsoluteDate(value) {
     }
 
     return formatForDateTimeLocal(date);
+}
+
+function parseDayMonthDate(value) {
+    const match = value.match(/^(\d{1,2})\s+([A-Za-z]+)\s+(\d{4})(?:\s+(.+))?$/);
+
+    if (!match) {
+        return null;
+    }
+
+    const monthIndex = getMonthIndex(match[2]);
+
+    if (monthIndex === -1) {
+        return null;
+    }
+
+    const date = new Date(Number(match[3]), monthIndex, Number(match[1]), 23, 59, 0, 0);
+
+    if (match[4]) {
+        applyTimeToDate(date, match[4]);
+    }
+
+    return date;
+}
+
+function getMonthIndex(monthName) {
+    const months = [
+        "january",
+        "february",
+        "march",
+        "april",
+        "may",
+        "june",
+        "july",
+        "august",
+        "september",
+        "october",
+        "november",
+        "december"
+    ];
+    const normalizedMonth = monthName.toLowerCase();
+
+    return months.findIndex(function (month) {
+        return month.startsWith(normalizedMonth.slice(0, 3));
+    });
 }
 
 function parseNumericDate(value) {
@@ -515,6 +652,20 @@ function normalizeText(value) {
         .toLowerCase()
         .replace(/[^a-z0-9]+/g, " ")
         .trim();
+}
+
+function isMoodleMetaLine(line) {
+    return /^(mark as done|opened\s*:|due\s*:)/i.test(line);
+}
+
+function isLikelyBreadcrumbLine(line) {
+    return />|›|International School|Bachelor|DATA SCIENCE|114-\d|1142/i.test(line)
+        || line.length > 120;
+}
+
+function isLikelyAttachmentLine(line) {
+    return /\.(zip|pdf|docx?|pptx?|xlsx?|png|jpe?g)\b/i.test(line)
+        || /^\d{1,2}\s+[A-Za-z]+\s+\d{4},?\s+\d{1,2}:\d{2}\s*(AM|PM)$/i.test(line);
 }
 
 function escapeRegExp(value) {
