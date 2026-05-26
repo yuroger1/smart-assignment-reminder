@@ -203,7 +203,7 @@ async function recognizeAssignmentImage(file) {
             }
         });
 
-        const text = result.data.text.trim();
+        const text = getAssignmentTextFromOcr(result.data);
         const textOutput = getElement("ocrTextOutput");
 
         if (textOutput) {
@@ -233,6 +233,112 @@ async function recognizeAssignmentImage(file) {
         setOcrStatus("Image recognition failed.");
         showOcrMessage("danger", "Could not recognize this image. Try a clearer screenshot or upload a different image.");
     }
+}
+
+function getAssignmentTextFromOcr(ocrData) {
+    const layoutLines = getOcrLayoutLines(ocrData);
+
+    if (layoutLines.length === 0) {
+        return String(ocrData.text || "").trim();
+    }
+
+    const bounds = getOcrLayoutBounds(layoutLines);
+    const filteredLines = layoutLines
+        .filter(function (line) {
+            return line.text && !isTopRightHeaderLine(line, bounds);
+        })
+        .sort(function (a, b) {
+            if (Math.abs(a.y0 - b.y0) > 10) {
+                return a.y0 - b.y0;
+            }
+
+            return a.x0 - b.x0;
+        });
+
+    const filteredText = filteredLines.map(function (line) {
+        return line.text;
+    }).join("\n").trim();
+
+    return filteredText || String(ocrData.text || "").trim();
+}
+
+function getOcrLayoutLines(ocrData) {
+    const rawLines = [];
+
+    if (Array.isArray(ocrData.lines)) {
+        rawLines.push(...ocrData.lines);
+    }
+
+    if (Array.isArray(ocrData.blocks)) {
+        ocrData.blocks.forEach(function (block) {
+            if (Array.isArray(block.paragraphs)) {
+                block.paragraphs.forEach(function (paragraph) {
+                    if (Array.isArray(paragraph.lines)) {
+                        rawLines.push(...paragraph.lines);
+                    }
+                });
+            }
+        });
+    }
+
+    return rawLines
+        .map(normalizeOcrLine)
+        .filter(function (line, index, lines) {
+            return line
+                && line.text
+                && lines.findIndex(function (candidate) {
+                    return candidate
+                        && candidate.text === line.text
+                        && candidate.x0 === line.x0
+                        && candidate.y0 === line.y0;
+                }) === index;
+        });
+}
+
+function normalizeOcrLine(line) {
+    const text = cleanFieldValue(line.text || "");
+    const bbox = line.bbox || line.boundingBox || {};
+    const x0 = Number(bbox.x0 ?? bbox.left ?? line.x0 ?? line.left);
+    const y0 = Number(bbox.y0 ?? bbox.top ?? line.y0 ?? line.top);
+    const x1 = Number(bbox.x1 ?? bbox.right ?? line.x1 ?? (line.left + line.width));
+    const y1 = Number(bbox.y1 ?? bbox.bottom ?? line.y1 ?? (line.top + line.height));
+
+    if (!text || [x0, y0, x1, y1].some(Number.isNaN)) {
+        return null;
+    }
+
+    return {
+        text: text,
+        x0: x0,
+        y0: y0,
+        x1: x1,
+        y1: y1
+    };
+}
+
+function getOcrLayoutBounds(lines) {
+    return lines.reduce(function (bounds, line) {
+        return {
+            minX: Math.min(bounds.minX, line.x0),
+            minY: Math.min(bounds.minY, line.y0),
+            maxX: Math.max(bounds.maxX, line.x1),
+            maxY: Math.max(bounds.maxY, line.y1)
+        };
+    }, {
+        minX: Infinity,
+        minY: Infinity,
+        maxX: 0,
+        maxY: 0
+    });
+}
+
+function isTopRightHeaderLine(line, bounds) {
+    const width = Math.max(bounds.maxX - bounds.minX, 1);
+    const height = Math.max(bounds.maxY - bounds.minY, 1);
+    const relativeX = (line.x0 - bounds.minX) / width;
+    const relativeY = (line.y0 - bounds.minY) / height;
+
+    return relativeX > 0.28 && relativeY < 0.24;
 }
 
 function parseAssignmentText(text) {
