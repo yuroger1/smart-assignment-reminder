@@ -98,6 +98,7 @@ Users can perform full CRUD operations for assignments.
 Assignment functions:
 
 - Add assignment
+- Paste or upload an assignment screenshot to auto-fill assignment fields
 - View assignment list
 - Edit assignment
 - Mark assignment as completed
@@ -466,6 +467,7 @@ This project includes:
 - Due soon and overdue classification
 - GMT+8 deadline display
 - Frontend and backend communication
+- Screenshot OCR for assignment form auto-fill
 - MySQL database integration
 - Online deployment
 

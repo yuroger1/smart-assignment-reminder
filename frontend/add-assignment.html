@@ -41,6 +41,31 @@
             Add a new assignment with course, description, due date, and priority.
         </p>
 
+        <div class="assignment-ocr-panel mb-4">
+            <div class="assignment-ocr-header">
+                <div>
+                    <h4 class="assignment-ocr-title">Paste Assignment Image</h4>
+                    <div id="ocrStatus" class="assignment-ocr-status">
+                        Paste a screenshot here, drop an image, or choose a file.
+                    </div>
+                </div>
+
+                <label class="btn btn-outline-primary btn-sm mb-0" for="assignmentImageInput">
+                    Choose Image
+                </label>
+                <input type="file" id="assignmentImageInput" accept="image/*" class="d-none">
+            </div>
+
+            <div id="assignmentPasteZone" class="assignment-paste-zone" tabindex="0">
+                <div id="ocrPreview" class="assignment-ocr-preview">
+                    <span>Click here and paste an assignment screenshot.</span>
+                </div>
+            </div>
+
+            <div id="ocrMessage" class="mt-3"></div>
+            <textarea id="ocrTextOutput" class="form-control mt-3 d-none" rows="5" readonly></textarea>
+        </div>
+
         <form id="assignmentForm" class="row g-3 mt-2">
 
             <div class="col-md-6">
@@ -84,6 +109,7 @@
 
 </div>
 
+<script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
 <script src="js/add-assignment.js"></script>
 </body>
 </html>
